@@ -1,0 +1,26 @@
+{
+	"version": "0.1.0",
+	"configurations": [
+	
+		{
+			"name": "GDB/OpenOCD",
+			"type": "gdb",
+			"request": "attach",
+			"printCalls": true,
+			"executable": "${workspaceRoot}/build/ble_example.elf",
+			"target": "localhost:3333",
+			"remote": true,
+			"cwd": "${workspaceRoot}",
+			"autorun": [
+				"mon reset halt",
+				"flushregs",
+				"thb app_main",
+				//"c",
+			],
+			"gdbpath": "[PUT THE PATH]/xtensa-esp32-elf/bin/xtensa-esp32-elf-gdb"
+		}
+
+	]
+}
+//https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md
+// Based in https://github.com/FHFS/esp-idf-VSCode-template/blob/master/.vscode/launch.json
