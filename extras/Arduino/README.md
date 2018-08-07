@@ -9,7 +9,7 @@ Inclusive the logging output is adapted to show logs in Arduino Serial Monitor.
 
 Just copy the directory main to your Arduino project.
 
-I recomend You start opennig the Example project in Arduino directory.
+I recomend You start opennig the Examples projects in this Arduino directory.
 
 Notes: 
     - See recomendations to ESP-IDF code in main README.

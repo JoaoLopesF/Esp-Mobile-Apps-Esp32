@@ -168,10 +168,7 @@ And enjoy :-)
 
 ## For Arduino developers
 
-Just install (see above) and copy the _main_ directory to you Arduino project
-(I suggest that you create a empty Arquido project to initial testings)
-
-Edit your _.ino_ file and put this code
+Please see README.md in Arduino directory
 
 ## Feedback and contribution
 
