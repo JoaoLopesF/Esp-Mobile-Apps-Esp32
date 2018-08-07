@@ -12,6 +12,7 @@ Just copy the directory main to your Arduino project.
 I recomend You start opennig the Examples projects in this Arduino directory.
 
 Notes: 
+
     - See recomendations to ESP-IDF code in main README.
     - The main directory is only to ESP-IDF code, or C/C++ pure code, 
         but can call any your Arduino subroutine there (functions).
