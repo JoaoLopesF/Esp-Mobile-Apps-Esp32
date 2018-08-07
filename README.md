@@ -5,8 +5,8 @@ I have prepared a set of applications, to serve as a basis,
 for those who need to make ble connected mobile projects with the ESP32.
 
     - Part I    - Esp-IDF app - Esp32 firmware example - https://github.com/JoaoLopesF/Esp-Idf-Mobile-App-Esp32
-    - Part II   - Android app - mobile app example
-    - Part III  - iOS app - mobile app example
+    - Part II   - Android app - mobile app example - soon
+    - Part III  - iOS app - mobile app example - soon
 
 So far, for anyone who ventures to make mobile applications (Android and iOS),
 with the ESP32, there was not yet, something ready for the beginning of the development.
@@ -113,7 +113,7 @@ I suggest you use a FreeRTOS task to agregate data after send.
 
 Modules of esp-idf example aplication
 
- -  main                    - main directory of esp-idf
+ - main                    - main directory of esp-idf
     
     - util                  - utilities 
         - ble_server.*      - ble server C++ wrapper class to ble_uart_server (in C)
@@ -127,9 +127,9 @@ Modules of esp-idf example aplication
 
     - main.*                - main code of project
 
-    - peripherals           - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
+    - peripherals.*         - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
 
-    - extra                 - extra things, as VSCode configurations
+ - extras                 - extra things, as Arduino code and VSCode configurations
 
 Generally you do not need to change anything in the util directory. 
 If you need, please add a Issue or a commit, to put it in repo, to help a upgrades in util
@@ -150,7 +150,7 @@ Is a same for any project with Esp32:
     
     - An configured C/C++ IDE (recommended). 
         
-        I suggest Eclipse CDT or VSCode
+        I suggest Eclipse CDT or VSCode:
 
             - Eclipse CDT: powerfull but high memory
             - VSCode: rich and lightweight, but refactoring is poor than eclipse
@@ -165,6 +165,13 @@ To install, just download or use the "Github desktop new" app to do it (is good 
 After please find all _"TODO: see it"_ occorences
 
 And enjoy :-)
+
+## For Arduino developers
+
+Just install (see above) and copy the _main_ directory to you Arduino project
+(I suggest that you create a empty Arquido project to initial testings)
+
+Edit your _.ino_ file and put this code
 
 ## Feedback and contribution
 

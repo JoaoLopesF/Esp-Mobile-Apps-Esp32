@@ -1,9 +1,12 @@
 #include "Arduino.h"
 
 /////////// Wrapper Arduino example code to Esp-Idf-Mobile-Apps-Esp32 ESP-IDF code
+/////////// Using Log from main
 
 #include "main/main.h"
 #include "main/util/log.h"
+
+const char* TAG = "arduino";
 
 //The setup function is called once at startup of the sketch
 void setup()
