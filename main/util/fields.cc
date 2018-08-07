@@ -41,11 +41,12 @@ static vector <string> fields;
 
 static Esp_Util& Util = Esp_Util::getInstance();
 
-////// Constructors
+////// Class
 
+/**
+* @brief Fields C++ class constructor
+*/
 Fields::Fields(const string& str, const string& delimiter) {
-
-	// Constructor
 
 	// Process the string and populate a vector with this fields
 
@@ -60,10 +61,11 @@ Fields::Fields(const string& str, const string& delimiter) {
 
 }
 
+/**
+* @brief Fields C++ class destructor
+*/
 Fields::~Fields()
 {
-	// Destructor
-
 	// Clear the vector 
 
 	fields.clear();
@@ -72,16 +74,18 @@ Fields::~Fields()
 
 /////// Methods
 
+/**
+* @brief Return the size of fields load in vector
+*/
 uint8_t Fields::size() {
-
-	// Return the size of fields load in vector
 
 	return fields.size();
 }
 
+/**
+* @brief Get field type string
+*/
 string Fields::getString(uint8_t fieldNum) {
-
-	// Get field type string
 
 	if (fieldNum < fields.size()) {
 		return fields[fieldNum];
@@ -90,9 +94,10 @@ string Fields::getString(uint8_t fieldNum) {
 	}
 }
 
+/**
+* @brief Get field type char
+*/
 char Fields::getChar(uint8_t fieldNum) {
-
-	// Get field type char
 
 	if (fieldNum < fields.size()) {
 		return fields[fieldNum][0];
@@ -102,9 +107,10 @@ char Fields::getChar(uint8_t fieldNum) {
 
 }
 
+/**
+* @brief Returns if the contents is numeric or not
+*/
 bool Fields::isNum(uint8_t fieldNum) {
-
-	// Returns if the contents is numeric or not
 
 	if (fieldNum < fields.size()) {
 		return Util.strIsNum(fields[fieldNum]);
@@ -113,9 +119,10 @@ bool Fields::isNum(uint8_t fieldNum) {
 	}
 }
 
+/**
+* @brief Get field type int 
+*/
 int32_t Fields::getInt(uint8_t fieldNum) {
-
-	// Get field type int
 
 	if (fieldNum < fields.size()) {
 		return Util.strToInt(fields[fieldNum]);
@@ -124,9 +131,11 @@ int32_t Fields::getInt(uint8_t fieldNum) {
 	}
 
 }
-float Fields::getFloat(uint8_t fieldNum) {
 
-	// Get field type float
+/**
+* @brief Get field type float
+*/
+float Fields::getFloat(uint8_t fieldNum) {
 
 	if (fieldNum < fields.size()) {
 		return Util.strToFloat(fields[fieldNum]);

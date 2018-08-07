@@ -76,6 +76,10 @@ using namespace std;
 
 ////// Prototypes of main
 
+#ifdef ARDUINO // Only for Arduino
+extern void app_main();
+#endif
+
 extern void appInitialize(bool resetTimerSeconds);
 extern void notifyMainTask(uint32_t action, bool fromISR=false);
 extern void processBleMessage(const string& menssage);

@@ -33,14 +33,14 @@ extern "C" {
 
 // Log
 
-// With logging output
-//#define logD(fmt, ...) ESP_LOGD(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+// Without logging output (please comment 2 ble_logD definitions below)
+//#define ble_logD(fmt, ...)
 
-// Without logging output
-#define logD(fmt, ...)
+// With logging output
+#define ble_logD(fmt, ...) logD(fmt, ##__VA_ARGS__)
 
 // Log of errors
-#define logE(fmt, ...) ESP_LOGE(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+#define ble_logE(fmt, ...) logE(fmt, ##__VA_ARGS__)
 
 // Prototypes - public
 

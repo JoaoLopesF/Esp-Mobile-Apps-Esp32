@@ -1,11 +1,13 @@
 /*****************************************
- * Module  : log.h - improved logging for Esp-Idf
- * Author  : Joao Lopes 
- * Comments: Learn about Esp-Idf logs in http://esp-idf.readthedocs.io/en/latest/api-reference/system/log.html
- *           Tips on gcc logging seen at http://www.valvers.com/programming/c/logging-with-gcc/
- * Versions:
+ * Project   : util - Utilities to esp-idf
+ * Programmer: Joao Lopes
+ * Module    : log.h - improved logging for Esp-Idf
+ * Comments  : Learn about Esp-Idf logs in http://esp-idf.readthedocs.io/en/latest/api-reference/system/log.html
+ *             Tips on gcc logging seen at http://www.valvers.com/programming/c/logging-with-gcc/
+ * Versions  :
  * ------ 	-------- 	-------------------------
- * 1.0.0  	01/08/18	First version
+ * 0.1.0  	01/08/18	First version
+ * 0.1.1	07/08/18  	Adapted to works with Arduino too
  *****************************************/
 
 #ifndef UTIL_LOG_H_
@@ -20,18 +22,18 @@
 
 #ifdef LOG_DISABLED
 
-    // Logs disabled
-    
-    #define LOG_LOCAL_LEVEL ESP_LOG_NONE
+	// Logs disabled
 
-#else 
+	#define LOG_LOCAL_LEVEL ESP_LOG_NONE
 
-    // Log level (must be first than esp_log include) (choose one and comment anothers)
-    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-    // #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
-    // #define LOG_LOCAL_LEVEL ESP_LOG_INFO
-    // #define LOG_LOCAL_LEVEL ESP_LOG_WARN
-    // #define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#else
+
+	// Log level (must be first than esp_log include) (choose one and comment anothers)
+	#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+	// #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+	// #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+	// #define LOG_LOCAL_LEVEL ESP_LOG_WARN
+	// #define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 
 #endif
 
@@ -85,43 +87,88 @@
 
 #else 
 
-    #ifdef LOG_CORE // Show core in logs ?
+	#ifndef ARDUINO // Use the ESP-IDF looging (Not for Arduino)
 
-        // Normal logs
+		#ifdef LOG_CORE // Show core in logs ?
 
-        #define logV(fmt, ...) LOG_ACTIVE ESP_LOGV(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logD(fmt, ...) LOG_ACTIVE ESP_LOGD(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logI(fmt, ...) LOG_ACTIVE ESP_LOGI(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logW(fmt, ...) LOG_ACTIVE ESP_LOGW(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logE(fmt, ...) LOG_ACTIVE ESP_LOGE(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			// Normal logs
 
-        // ISR logs (use with caution)
+			#define logV(fmt, ...) LOG_ACTIVE ESP_LOGV(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logD(fmt, ...) LOG_ACTIVE ESP_LOGD(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logI(fmt, ...) LOG_ACTIVE ESP_LOGI(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logW(fmt, ...) LOG_ACTIVE ESP_LOGW(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logE(fmt, ...) LOG_ACTIVE ESP_LOGE(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
 
-        #define logIsrV(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGV(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logIsrD(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGD(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logIsrI(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGI(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logIsrW(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGW(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
-        #define logIsrE(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGE(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			// ISR logs (use with caution)
 
-    #else // Witout core information
+			#define logIsrV(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGV(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrD(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGD(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrI(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGI(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrW(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGW(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrE(fmt, ...) LOG_ACTIVE ESP_EARLY_LOGE(TAG, "(%s)(C%d) " fmt, __func__, xPortGetCoreID(), ##__VA_ARGS__)
 
-        // Normal logs
+		#else // Witout core information
 
-        #define logV(fmt, ...) LOG_ACTIVE_VAR ESP_LOGV(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logD(fmt, ...) LOG_ACTIVE_VAR ESP_LOGD(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logI(fmt, ...) LOG_ACTIVE_VAR ESP_LOGI(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logW(fmt, ...) LOG_ACTIVE_VAR ESP_LOGW(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logE(fmt, ...) LOG_ACTIVE_VAR ESP_LOGE(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			// Normal logs
 
-        // ISR logs (use with caution)
-        
-        #define logIsrV(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGV(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logIsrD(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGD(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logIsrI(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGI(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logIsrW(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGW(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
-        #define logIsrE(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGE(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logV(fmt, ...) LOG_ACTIVE_VAR ESP_LOGV(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logD(fmt, ...) LOG_ACTIVE_VAR ESP_LOGD(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logI(fmt, ...) LOG_ACTIVE_VAR ESP_LOGI(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logW(fmt, ...) LOG_ACTIVE_VAR ESP_LOGW(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logE(fmt, ...) LOG_ACTIVE_VAR ESP_LOGE(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
 
-    #endif
+			// ISR logs (use with caution)
+
+			#define logIsrV(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGV(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logIsrD(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGD(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logIsrI(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGI(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logIsrW(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGW(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+			#define logIsrE(fmt, ...) LOG_ACTIVE_VAR ESP_EARLY_LOGE(TAG, "(%s) " fmt, __func__, ##__VA_ARGS__)
+
+		#endif
+
+	#else // Arduino - only - simple serial output with printf
+
+		#define LOG_MILLIS (unsigned long)(esp_timer_get_time() / 1000)
+			
+    		#ifdef LOG_CORE // Show core in logs ?
+
+			// Normal logs
+
+			#define logV(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) printf("V (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logD(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG) printf("D (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logI(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_INFO) printf("I (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logW(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_WARN) printf("W (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logE(fmt, ...) LOG_ACTIVE printf("E (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+
+			// ISR logs (use with caution)
+
+			#define logIsrV(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) ets_printf("V (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrD(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG) ets_printf("D (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrI(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_INFO) ets_printf("I (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrW(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_WARN) ets_printf("W (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+			#define logIsrE(fmt, ...) LOG_ACTIVE ets_printf("E (%lu) %s: (%s)(C%d) " fmt "\n", LOG_MILLIS, TAG, __func__, xPortGetCoreID(), ##__VA_ARGS__)
+
+		#else // Witout core information
+
+			// Normal logs
+
+			#define logV(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) printf("V (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logD(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG) printf("D (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logI(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_INFO) printf("I (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logW(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_WARN) printf("W (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logE(fmt, ...) LOG_ACTIVE printf("E (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+
+			// ISR logs (use with caution)
+
+			#define logIsrV(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) ets_printf("V (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logIsrD(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG) ets_printf("D (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logIsrI(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_INFO) ets_printf("I (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logIsrW(fmt, ...) LOG_ACTIVE if (LOG_LOCAL_LEVEL >= ESP_LOG_WARN) ets_printf("W (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+			#define logIsrE(fmt, ...) LOG_ACTIVE ets_printf("E (%lu) %s: (%s) " fmt "\n", LOG_MILLIS, TAG, __func__, ##__VA_ARGS__)
+
+		#endif
+	#endif
 
 #endif
 

@@ -5,7 +5,7 @@
  * Comments  : based on ArduinoMedianFilter
  * Versions:
  * ------ 	-------- 	-------------------------
- * 1.0.0  	01/08/18	First version
+ * 0.1.0  	01/08/18	First version
  *****************************************/
 
 #ifndef MAIN_UTIL_MEDIAN_FILTER_H_
@@ -26,15 +26,18 @@ public:
 	}
 
 
+	/**
+	 * @brief Set value of sample
+	 */
 	void set(unsigned int idx, T value) {
-		// Set value of sample
 
 		_buffer[idx] = value;
 	}
 
+	/**
+ 	* @brief Get the median value 
+	*/
 	bool getMedian(T& value) {
-
-		// Get the median value
 
 		sort();
 
@@ -42,9 +45,10 @@ public:
 		return true;
 	}
 
+	/**
+ 	* @brief Get the average
+	*/
 	bool getAverage(unsigned int samples, T &value) {
-
-		// Get the average
 
 		if (samples > 0) {
 			if (_size < samples)
@@ -71,9 +75,10 @@ private:
 
 	T _buffer[_size]; // The buffer
 
+	/**
+ 	* @brief Sort the buffer 
+	*/
 	void sort() {
-
-		// Sort the buffer
 
 		unsigned int gap = _size;
 		unsigned int swapped = true;

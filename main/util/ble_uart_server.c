@@ -193,80 +193,80 @@ static struct gatts_char_inst gl_char[GATTS_CHAR_NUM] = { {
 
 static void char1_read_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("char1_read_handler %d", param->read.handle);
+	ble_logD("char1_read_handler %d", param->read.handle);
 
 	esp_gatt_rsp_t rsp;
 	memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
 	rsp.attr_value.handle = param->read.handle;
 	if (gl_char[0].char_val != NULL) {
-		logD("char1_read_handler char_val %d",gl_char[0].char_val->attr_len);
+		ble_logD("char1_read_handler char_val %d",gl_char[0].char_val->attr_len);
 		rsp.attr_value.len = gl_char[0].char_val->attr_len;
 		for (uint32_t pos = 0;
 				pos < gl_char[0].char_val->attr_len
 						&& pos < gl_char[0].char_val->attr_max_len; pos++) {
 			rsp.attr_value.value[pos] = gl_char[0].char_val->attr_value[pos];
 		}
-	} logD("char1_read_handler esp_gatt_rsp_t");
+	} ble_logD("char1_read_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->read.conn_id,
 			param->read.trans_id, ESP_GATT_OK, &rsp);
 }
 
 static void char2_read_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("char2_read_handler %d", param->read.handle);
+	ble_logD("char2_read_handler %d", param->read.handle);
 
 	esp_gatt_rsp_t rsp;
 	memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
 	rsp.attr_value.handle = param->read.handle;
 	if (gl_char[1].char_val != NULL) {
-		logD("char2_read_handler char_val %d",gl_char[1].char_val->attr_len);
+		ble_logD("char2_read_handler char_val %d",gl_char[1].char_val->attr_len);
 		rsp.attr_value.len = gl_char[1].char_val->attr_len;
 		for (uint32_t pos = 0;
 				pos < gl_char[1].char_val->attr_len
 						&& pos < gl_char[1].char_val->attr_max_len; pos++) {
 			rsp.attr_value.value[pos] = gl_char[1].char_val->attr_value[pos];
 		}
-	} logD("char2_read_handler esp_gatt_rsp_t");
+	} ble_logD("char2_read_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->read.conn_id,
 			param->read.trans_id, ESP_GATT_OK, &rsp);
 }
 
 static void descr1_read_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("descr1_read_handler %d", param->read.handle);
+	ble_logD("descr1_read_handler %d", param->read.handle);
 
 	esp_gatt_rsp_t rsp;
 	memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
 	rsp.attr_value.handle = param->read.handle;
 	if (gl_char[0].descr_val != NULL) {
-		logD("descr1_read_handler descr_val %d",gl_char[0].descr_val->attr_len);
+		ble_logD("descr1_read_handler descr_val %d",gl_char[0].descr_val->attr_len);
 		rsp.attr_value.len = gl_char[0].descr_val->attr_len;
 		for (uint32_t pos = 0;
 				pos < gl_char[0].descr_val->attr_len
 						&& pos < gl_char[0].descr_val->attr_max_len; pos++) {
 			rsp.attr_value.value[pos] = gl_char[0].descr_val->attr_value[pos];
 		}
-	} logD("descr1_read_handler esp_gatt_rsp_t ");
+	} ble_logD("descr1_read_handler esp_gatt_rsp_t ");
 	esp_ble_gatts_send_response(gatts_if, param->read.conn_id,
 			param->read.trans_id, ESP_GATT_OK, &rsp);
 }
 
 static void descr2_read_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("descr2_read_handler %d", param->read.handle);
+	ble_logD("descr2_read_handler %d", param->read.handle);
 
 	esp_gatt_rsp_t rsp;
 	memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
 	rsp.attr_value.handle = param->read.handle;
 	if (gl_char[0].descr_val != NULL) {
-		logD("descr2_read_handler descr_val %d",gl_char[1].descr_val->attr_len);
+		ble_logD("descr2_read_handler descr_val %d",gl_char[1].descr_val->attr_len);
 		rsp.attr_value.len = gl_char[1].descr_val->attr_len;
 		for (uint32_t pos = 0;
 				pos < gl_char[1].descr_val->attr_len
 						&& pos < gl_char[1].descr_val->attr_max_len; pos++) {
 			rsp.attr_value.value[pos] = gl_char[1].descr_val->attr_value[pos];
 		}
-	} logD("descr2_read_handler esp_gatt_rsp_t");
+	} ble_logD("descr2_read_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->read.conn_id,
 			param->read.trans_id, ESP_GATT_OK, &rsp);
 }
@@ -284,15 +284,15 @@ static void char2_notify_handle(esp_gatt_if_t gatts_if, uint16_t conn_id) {
 
 static void char1_write_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("char1_write_handler %d", param->write.handle);
+	ble_logD("char1_write_handler %d", param->write.handle);
 
 	if (gl_char[0].char_val != NULL) {
-		logD("char1_write_handler char_val %d",param->write.len);
+		ble_logD("char1_write_handler char_val %d",param->write.len);
 		gl_char[0].char_val->attr_len = param->write.len;
 		for (uint32_t pos = 0; pos < param->write.len; pos++) {
 			gl_char[0].char_val->attr_value[pos] = param->write.value[pos];
-		} logD("char1_write_handler %.*s", gl_char[0].char_val->attr_len, (char*)gl_char[0].char_val->attr_value);
-	} logD(" char1_write_handler esp_gatt_rsp_t");
+		} ble_logD("char1_write_handler %.*s", gl_char[0].char_val->attr_len, (char*)gl_char[0].char_val->attr_value);
+	} ble_logD(" char1_write_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->write.conn_id,
 			param->write.trans_id, ESP_GATT_OK, NULL);
 
@@ -314,30 +314,30 @@ static void char1_write_handler(esp_gatts_cb_event_t event,
 
 static void char2_write_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("char2_write_handler %d", param->write.handle);
+	ble_logD("char2_write_handler %d", param->write.handle);
 
 	if (gl_char[1].char_val != NULL) {
-		logD("char2_write_handler char_val %d",param->write.len);
+		ble_logD("char2_write_handler char_val %d",param->write.len);
 		gl_char[1].char_val->attr_len = param->write.len;
 		for (uint32_t pos = 0; pos < param->write.len; pos++) {
 			gl_char[1].char_val->attr_value[pos] = param->write.value[pos];
 		}
-	} logD("char2_write_handler esp_gatt_rsp_t");
+	} ble_logD("char2_write_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->write.conn_id,
 			param->write.trans_id, ESP_GATT_OK, NULL);
 }
 
 static void descr1_write_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-	logD("descr1_write_handler %d", param->write.handle);
+	ble_logD("descr1_write_handler %d", param->write.handle);
 
 	if (gl_char[0].descr_val != NULL) {
-		logD("descr1_write_handler descr_val %d",param->write.len);
+		ble_logD("descr1_write_handler descr_val %d",param->write.len);
 		gl_char[0].descr_val->attr_len = param->write.len;
 		for (uint32_t pos = 0; pos < param->write.len; pos++) {
 			gl_char[0].descr_val->attr_value[pos] = param->write.value[pos];
 		}
-	} logD("descr1_write_handler esp_gatt_rsp_t");
+	} ble_logD("descr1_write_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->write.conn_id,
 			param->write.trans_id, ESP_GATT_OK, NULL);
 }
@@ -347,27 +347,27 @@ static void descr2_write_handler(esp_gatts_cb_event_t event,
 
 	// Original code changed here !
 
-	logD("descr2_write_handler %d", param->write.handle);
+	ble_logD("descr2_write_handler %d", param->write.handle);
 
 	if (gl_char[1].descr_val != NULL) {
-		logD("descr2_write_handler descr_val %d",param->write.len);
+		ble_logD("descr2_write_handler descr_val %d",param->write.len);
 		gl_char[1].descr_val->attr_len = param->write.len;
 		for (uint32_t pos = 0; pos < param->write.len; pos++) {
 			gl_char[1].descr_val->attr_value[pos] = param->write.value[pos];
 		}
 		is_notify = gl_char[1].descr_val->attr_value[0];
-		logD("descr1_write_handler is_notify %d",is_notify);
-	} logD("descr2_write_handler esp_gatt_rsp_t");
+		ble_logD("descr1_write_handler is_notify %d",is_notify);
+	} ble_logD("descr2_write_handler esp_gatt_rsp_t");
 	esp_ble_gatts_send_response(gatts_if, param->write.conn_id,
 			param->write.trans_id, ESP_GATT_OK, NULL);
 }
 
 static void gatts_add_char() {
 
-	logD("gatts_add_char %d", GATTS_CHAR_NUM);
+	ble_logD("gatts_add_char %d", GATTS_CHAR_NUM);
 	for (uint32_t pos = 0; pos < GATTS_CHAR_NUM; pos++) {
 		if (gl_char[pos].char_handle == 0) {
-			logD("ADD pos %d handle %d service %d", pos,gl_char[pos].char_handle,gl_profile.service_handle);
+			ble_logD("ADD pos %d handle %d service %d", pos,gl_char[pos].char_handle,gl_profile.service_handle);
 			ble_add_char_pos = pos;
 			esp_ble_gatts_add_char(gl_profile.service_handle,
 					&gl_char[pos].char_uuid, gl_char[pos].char_perm,
@@ -380,30 +380,30 @@ static void gatts_add_char() {
 
 static void gatts_check_add_char(esp_bt_uuid_t char_uuid, uint16_t attr_handle) {
 
-	logD("gatts_check_add_char %d", attr_handle);
+	ble_logD("gatts_check_add_char %d", attr_handle);
 	if (attr_handle != 0) {
 		if (char_uuid.len == ESP_UUID_LEN_16) {
-			logD("Char UUID16: %x", char_uuid.uuid.uuid16);
+			ble_logD("Char UUID16: %x", char_uuid.uuid.uuid16);
 		} else if (char_uuid.len == ESP_UUID_LEN_32) {
-			logD("Char UUID32: %x", char_uuid.uuid.uuid32);
+			ble_logD("Char UUID32: %x", char_uuid.uuid.uuid32);
 		} else if (char_uuid.len == ESP_UUID_LEN_128) {
-			logD("Char UUID128: %x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", char_uuid.uuid.uuid128[0],
+			ble_logD("Char UUID128: %x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", char_uuid.uuid.uuid128[0],
 					char_uuid.uuid.uuid128[1], char_uuid.uuid.uuid128[2], char_uuid.uuid.uuid128[3],
 					char_uuid.uuid.uuid128[4], char_uuid.uuid.uuid128[5], char_uuid.uuid.uuid128[6],
 					char_uuid.uuid.uuid128[7], char_uuid.uuid.uuid128[8], char_uuid.uuid.uuid128[9],
 					char_uuid.uuid.uuid128[10], char_uuid.uuid.uuid128[11], char_uuid.uuid.uuid128[12],
 					char_uuid.uuid.uuid128[13], char_uuid.uuid.uuid128[14], char_uuid.uuid.uuid128[15]);
 		} else {
-			logE("Char UNKNOWN LEN %d", char_uuid.len);
+			ble_logE("Char UNKNOWN LEN %d", char_uuid.len);
 		}
 
-		logD("FOUND Char pos %d handle %d", ble_add_char_pos,attr_handle);
+		ble_logD("FOUND Char pos %d handle %d", ble_add_char_pos,attr_handle);
 		gl_char[ble_add_char_pos].char_handle = attr_handle;
 
 		// is there a descriptor to add ?
 		if (gl_char[ble_add_char_pos].descr_uuid.len != 0
 				&& gl_char[ble_add_char_pos].descr_handle == 0) {
-			logD("ADD Descr pos %d handle %d service %d", ble_add_char_pos,gl_char[ble_add_char_pos].descr_handle,gl_profile.service_handle);
+			ble_logD("ADD Descr pos %d handle %d service %d", ble_add_char_pos,gl_char[ble_add_char_pos].descr_handle,gl_profile.service_handle);
 			esp_ble_gatts_add_char_descr(gl_profile.service_handle,
 					&gl_char[ble_add_char_pos].descr_uuid,
 					gl_char[ble_add_char_pos].descr_perm,
@@ -418,22 +418,22 @@ static void gatts_check_add_char(esp_bt_uuid_t char_uuid, uint16_t attr_handle) 
 static void gatts_check_add_descr(esp_bt_uuid_t descr_uuid,
 		uint16_t attr_handle) {
 
-	logD("gatts_check_add_descr %d", attr_handle);
+	ble_logD("gatts_check_add_descr %d", attr_handle);
 	if (attr_handle != 0) {
 		if (descr_uuid.len == ESP_UUID_LEN_16) {
-			logD("Char UUID16: %x", descr_uuid.uuid.uuid16);
+			ble_logD("Char UUID16: %x", descr_uuid.uuid.uuid16);
 		} else if (descr_uuid.len == ESP_UUID_LEN_32) {
-			logD("Char UUID32: %x", descr_uuid.uuid.uuid32);
+			ble_logD("Char UUID32: %x", descr_uuid.uuid.uuid32);
 		} else if (descr_uuid.len == ESP_UUID_LEN_128) {
-			logD("Char UUID128: %x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", descr_uuid.uuid.uuid128[0],
+			ble_logD("Char UUID128: %x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", descr_uuid.uuid.uuid128[0],
 					descr_uuid.uuid.uuid128[1], descr_uuid.uuid.uuid128[2], descr_uuid.uuid.uuid128[3],
 					descr_uuid.uuid.uuid128[4], descr_uuid.uuid.uuid128[5], descr_uuid.uuid.uuid128[6],
 					descr_uuid.uuid.uuid128[7], descr_uuid.uuid.uuid128[8], descr_uuid.uuid.uuid128[9],
 					descr_uuid.uuid.uuid128[10], descr_uuid.uuid.uuid128[11], descr_uuid.uuid.uuid128[12],
 					descr_uuid.uuid.uuid128[13], descr_uuid.uuid.uuid128[14], descr_uuid.uuid.uuid128[15]);
 		} else {
-			logE("Descriptor UNKNOWN LEN %d", descr_uuid.len);
-		} logD("FOUND Descriptor pos %d handle %d", ble_add_char_pos,attr_handle);
+			ble_logE("Descriptor UNKNOWN LEN %d", descr_uuid.len);
+		} ble_logD("FOUND Descriptor pos %d handle %d", ble_add_char_pos,attr_handle);
 		gl_char[ble_add_char_pos].descr_handle = attr_handle;
 	}
 	gatts_add_char();
@@ -459,7 +459,7 @@ static void gatts_check_callback(esp_gatts_cb_event_t event,
 		break;
 	}
 
-	logD("gatts_check_callback read %d num %d handle %d", read, GATTS_CHAR_NUM, handle);
+	ble_logD("gatts_check_callback read %d num %d handle %d", read, GATTS_CHAR_NUM, handle);
 	for (uint32_t pos = 0; pos < GATTS_CHAR_NUM; pos++) {
 		if (gl_char[pos].char_handle == handle) {
 			if (read == 1) {
@@ -503,7 +503,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 		esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
 	switch (event) {
 	case ESP_GATTS_REG_EVT:
-		logD("REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
+		ble_logD("REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
 		gl_profile.service_id.is_primary = true;
 		gl_profile.service_id.id.inst_id = 0x00;
 		gl_profile.service_id.id.uuid.len = ESP_UUID_LEN_128;
@@ -514,13 +514,13 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 		// Changed - device name
 		esp_ble_gap_set_device_name(mDeviceName);
 		esp_err_t ret = esp_ble_gap_config_adv_data(&ble_adv_data);
-		logD("esp_ble_gap_config_adv_data %d", ret);
+		ble_logD("esp_ble_gap_config_adv_data %d", ret);
 
 		esp_ble_gatts_create_service(gatts_if, &gl_profile.service_id,
 				GATTS_NUM_HANDLE);
 		break;
 	case ESP_GATTS_READ_EVT: {
-		logD("GATT_READ_EVT, conn_id %d, trans_id %d, handle %d", param->read.conn_id, param->read.trans_id, param->read.handle);
+		ble_logD("GATT_READ_EVT, conn_id %d, trans_id %d, handle %d", param->read.conn_id, param->read.trans_id, param->read.handle);
 //        esp_gatt_rsp_t rsp;
 //        memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
 //        rsp.attr_value.handle = param->read.handle;
@@ -535,8 +535,8 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 		break;
 	}
 	case ESP_GATTS_WRITE_EVT: {
-		logD("GATT_WRITE_EVT, conn_id %d, trans_id %d, handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
-		logD("GATT_WRITE_EVT, value len %d, value %08x", param->write.len, *(uint32_t *)param->write.value);
+		ble_logD("GATT_WRITE_EVT, conn_id %d, trans_id %d, handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
+		ble_logD("GATT_WRITE_EVT, value len %d, value %08x", param->write.len, *(uint32_t *)param->write.value);
 //       esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
 		gatts_check_callback(event, gatts_if, param);
 		break;
@@ -545,7 +545,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 
 		// Original code changed here !
 
-		logD("ESP_GATTS_MTU_EVT, mtu %d", param->mtu.mtu);
+		ble_logD("ESP_GATTS_MTU_EVT, mtu %d", param->mtu.mtu);
 		mMTU = param->mtu.mtu;
 
 		// Callback for MTU changed
@@ -562,7 +562,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 	case ESP_GATTS_UNREG_EVT:
 		break;
 	case ESP_GATTS_CREATE_EVT:
-		logD("CREATE_SERVICE_EVT, status %d,  service_handle %d", param->create.status, param->create.service_handle);
+		ble_logD("CREATE_SERVICE_EVT, status %d,  service_handle %d", param->create.status, param->create.service_handle);
 		gl_profile.service_handle = param->create.service_handle;
 		gl_profile.char_uuid.len = gl_char[0].char_uuid.len;
 		gl_profile.char_uuid.uuid.uuid16 = gl_char[0].char_uuid.uuid.uuid16;
@@ -580,16 +580,16 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 //	    uint16_t length = 0;
 //        const uint8_t *prf_char;
 
-		logD("ADD_CHAR_EVT, status 0x%X,  attr_handle %d, service_handle %d",
+		ble_logD("ADD_CHAR_EVT, status 0x%X,  attr_handle %d, service_handle %d",
 				param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
 		gl_profile.char_handle = param->add_char.attr_handle;
 //        gl_profile.descr_uuid.len = ESP_UUID_LEN_16;
 //        gl_profile.descr_uuid.uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
 //        esp_ble_gatts_get_attr_value(param->add_char.attr_handle,  &length, &prf_char);
 
-//        logD("the gatts demo char length = %x", length);
+//        ble_logD("the gatts demo char length = %x", length);
 //        for(int i = 0; i < length; i++){
-//            logD("prf_char[%x] =%x",i,prf_char[i]);
+//            ble_logD("prf_char[%x] =%x",i,prf_char[i]);
 //        }
 //        esp_ble_gatts_add_char_descr(gl_profile.service_handle, &gl_profile.descr_uuid,
 //                                     ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, NULL, NULL);
@@ -600,9 +600,9 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 		break;
 	}
 	case ESP_GATTS_ADD_CHAR_DESCR_EVT:
-		logD("ADD_DESCR_EVT char, status %d, attr_handle %d, service_handle %d",
+		ble_logD("ADD_DESCR_EVT char, status %d, attr_handle %d, service_handle %d",
 				param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
-		logD("ADD_DESCR_EVT desc, status %d, attr_handle %d, service_handle %d",
+		ble_logD("ADD_DESCR_EVT desc, status %d, attr_handle %d, service_handle %d",
 				param->add_char_descr.status, param->add_char_descr.attr_handle, param->add_char_descr.service_handle);
 		if (param->add_char_descr.status == ESP_GATT_OK) {
 			gatts_check_add_descr(param->add_char.char_uuid,
@@ -612,13 +612,13 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 	case ESP_GATTS_DELETE_EVT:
 		break;
 	case ESP_GATTS_START_EVT:
-		logD("SERVICE_START_EVT, status %d, service_handle %d",
+		ble_logD("SERVICE_START_EVT, status %d, service_handle %d",
 				param->start.status, param->start.service_handle);
 		break;
 	case ESP_GATTS_STOP_EVT:
 		break;
 	case ESP_GATTS_CONNECT_EVT:
-		logD("SERVICE_START_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x:, is_conn %d",
+		ble_logD("SERVICE_START_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x:, is_conn %d",
 				param->connect.conn_id,
 				param->connect.remote_bda[0], param->connect.remote_bda[1], param->connect.remote_bda[2],
 				param->connect.remote_bda[3], param->connect.remote_bda[4], param->connect.remote_bda[5],
@@ -678,7 +678,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
 		if (param->reg.status == ESP_GATT_OK) {
 			gl_profile.gatts_if = gatts_if;
 		} else {
-			logD("Reg app failed, app_id %04x, status %d",
+			ble_logD("Reg app failed, app_id %04x, status %d",
 					param->reg.app_id,
 					param->reg.status);
 			return;
@@ -698,7 +698,7 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	strncpy (mDeviceName, device_name, 30 - 5); // leaves 5 reserved for the end of mac address
 
-	logD ("Initializing BLE - device name %s - cpu %d", mDeviceName, xPortGetCoreID ());
+	ble_logD ("Initializing BLE - device name %s - cpu %d", mDeviceName, xPortGetCoreID ());
 
 	// Initialize the BLE
 
@@ -713,13 +713,13 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 	esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 	ret = esp_bt_controller_init (& bt_cfg);
 	if (ret) {
-		logE("initialize controller failed");
+		ble_logE("initialize controller failed");
         return ESP_FAIL;
 	}
 
 	ret = esp_bt_controller_enable (ESP_BT_MODE_BLE); // BLE -> BLE only
 	if (ret) {
-		logE("enable controller failed");
+		ble_logE("enable controller failed");
         return ESP_FAIL;
 	}
 
@@ -727,12 +727,12 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	ret = esp_bluedroid_init ();
 	if (ret) {
-		logE("init bluetooth failed");
+		ble_logE("init bluetooth failed");
         return ESP_FAIL;
 	}
 	ret = esp_bluedroid_enable ();
 	if (ret) {
-		logE("enable bluetooth failed");
+		ble_logE("enable bluetooth failed");
         return ESP_FAIL;
 	}
 
@@ -741,9 +741,9 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	ret = esp_ble_tx_power_set (ESP_BLE_PWR_TYPE_DEFAULT, BLE_TX_POWER);
 	if (ret == ESP_OK) {
-		logD("esp_ble_tx_power_set: set to %d", BLE_TX_POWER);
+		ble_logD("esp_ble_tx_power_set: set to %d", BLE_TX_POWER);
 	} else {
-		logE("esp_ble_tx_power_set: error ret=%d", ret);
+		ble_logE("esp_ble_tx_power_set: error ret=%d", ret);
 	};
 #endif
 
@@ -774,7 +774,7 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	// Debug
 
-	logD ("BLE UART server initialized, device name %s", mSystemName);
+	ble_logD ("BLE UART server initialized, device name %s", mDeviceName);
 
 	return ESP_OK;
 }
@@ -803,12 +803,12 @@ void ble_uart_server_SetCallbackReceiveData(void (*callbackReceived) (char* data
 
 esp_err_t ble_uart_server_SendData(const char* data, uint8_t size) {
 
-	logD ("data [%d] : %s", size, data);
+	ble_logD ("data [%d] : %s", size, data);
 
 	// Connected?
 
 	if (mConnected == false || mGatts_if == ESP_GATT_IF_NONE) {
-		logE ("not connected");
+		ble_logE ("not connected");
 		return ESP_FAIL;
 	}
 
@@ -826,7 +826,7 @@ esp_err_t ble_uart_server_SendData(const char* data, uint8_t size) {
 
 	// Send data via BLE notification
 
-	logD("if %d conn %d handle %d", mGatts_if, 0 , gl_char[1].char_handle);
+	ble_logD("if %d conn %d handle %d", mGatts_if, 0 , gl_char[1].char_handle);
 
 	return esp_ble_gatts_send_indicate(mGatts_if, 0, gl_char[1].char_handle,
 			size, (uint8_t *) send, false);

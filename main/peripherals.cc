@@ -64,9 +64,10 @@ static uint16_t adcReadMedian (adc1_channel_t channelADC1);
 
 /////// Routines for all peripherals
 
+/**
+ * @brief Initialize all peripherals
+ */
 void peripheralsInitialize() {
-
-	// Initialize all peripherals
 
 	logD("Initializing peripherals ...");
 
@@ -84,9 +85,10 @@ void peripheralsInitialize() {
 	
 }
 
+/**
+ * @brief Finalize all peripherals 
+ */
 void peripheralsFinalize() {
-
-	// Finalize all peripherals 
 
 	logD("Finalizing peripherals ...");
 
@@ -106,9 +108,10 @@ void peripheralsFinalize() {
 
 /////// Routines for GPIO
 
+/**
+ * @brief Initializes GPIOs
+ */
 static void gpioInitialize() {
-
-	/////// Initializes GPIOs
 
 	logD ("Initializing GPIO ...");
 
@@ -206,13 +209,14 @@ static void gpioInitialize() {
 
 }
 
+/**
+ * @brief Finish the GPIO
+ */
 static void gpioFinalize () {
 
 	// Debug
 
 	logD ("GPIO finalizing ...");
-
-	// Finish the GPIO
 
 #ifdef PIN_LED_ESP32
 
@@ -224,7 +228,6 @@ static void gpioFinalize () {
 #endif
 
 #ifdef INSTALL_ISR_SERVICE
-
 	// Disable ISRs
 
 	#ifdef PIN_BUTTON_STANDBY
@@ -248,10 +251,10 @@ static void gpioFinalize () {
 }
 
 #ifdef PIN_LED_ESP32
-
+/**
+ * @brief Blink the board led
+ */
 void gpioBlinkLedEsp32() {
-
-	// Blink the board led
 
 	mLedEsp32On = !mLedEsp32On;
 
@@ -265,9 +268,10 @@ void gpioBlinkLedEsp32() {
 
 #ifdef INSTALL_ISR_SERVICE
 
+/**
+ * @brief Interrupt handler of GPIOs
+ */
 static void IRAM_ATTR gpio_isr_handler (void * arg) {
-
-	// Interrupt handler of GPIOs
 
 	uint32_t gpio_num = (uint32_t) arg;
 
@@ -300,9 +304,10 @@ static void IRAM_ATTR gpio_isr_handler (void * arg) {
 
 /////// Routines for ADC
 
+/**
+ * @brief Initializes ADC
+ */
 static void adcInitialize() {
-
-	// Initializes ADC
 
 	logD ("Initializing ADC ...");
 
@@ -323,8 +328,9 @@ static void adcInitialize() {
 
 }
 
-// Reading the sensors by ADC
-
+/**
+ * @brief Reading the sensors by ADC
+ */
 void adcRead() {
 
 	// Read sensors
@@ -362,9 +368,11 @@ void adcRead() {
 
 ////// Private
 
+/**
+ * @brief Average reading - ADC
+ */
+ 
 static uint16_t adcReadMedian (adc1_channel_t channelADC1) {
-
-	// Average reading - ADC
 
 	for (uint8_t i = 0; i <MEDIAN_FILTER_READINGS; i ++) {
 

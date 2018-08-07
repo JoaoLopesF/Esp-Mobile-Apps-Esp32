@@ -36,9 +36,10 @@ static const char* TAG = "util";
 
 ////// Routines
 
+/**
+* @brief Initialize the Esp32
+*/
 void Esp_Util::esp32Initialize() {
-
-	// Initialize the Esp32
 
 	esp_err_t ret;
 
@@ -61,9 +62,10 @@ void Esp_Util::esp32Initialize() {
 
 }
 
+/**
+* @brief Expand escape chars for debug
+*/
 string Esp_Util::strExpand(const string& str) {
-
-	// Expand escape chars for debug
 
 	string ret = "";
 
@@ -90,10 +92,11 @@ string Esp_Util::strExpand(const string& str) {
 	return ret;
 }
 
+/**
+* @brief Replace one char to another
+*/
 void Esp_Util::strReplace(string& str, char c1, char c2) {
-
-	// Replace one char to another
-
+	
 	for (int i = 0; i < str.length(); ++i) {
 		if (str[i] == c1)
 			str[i] = c2;
@@ -103,11 +106,11 @@ void Esp_Util::strReplace(string& str, char c1, char c2) {
 
 }
 
-
+/**
+* @brief String is numeric ?
+*/
 bool Esp_Util::strIsNum(const string& str) {
-
-	// String is numeric
-
+	
     bool isNum = false;
 
     for (uint8_t i = 0; i < str.length(); i++) {
@@ -120,23 +123,25 @@ bool Esp_Util::strIsNum(const string& str) {
     return isNum;
 }
 
+/**
+* @brief Convert string to integer
+*/
 int Esp_Util::strToInt(const string& str) {
-
-	// Convert string para integer
-
+	
     if (strIsNum(str)) {
 
     	return atoi(str.c_str());
     }
 
-    return 0; // Numero invalido
+    return 0; // Invalid number 
 
 }
 
+/**
+* @brief Convert string to float
+*/
 float Esp_Util::strToFloat(const string& str) {
-
-	// Converte string para float
-
+	
 	if (strIsNum(str)) {
 
 		return atof(str.c_str());
@@ -146,9 +151,10 @@ float Esp_Util::strToFloat(const string& str) {
 	return 0.0f;
 }
 
+/**
+* @brief Round float
+*/
 float Esp_Util::roundFloat(float value, uint8_t decimals) {
-
-	// Round float
 
     float factor = ROUNDF(pow(10, decimals));
 
@@ -159,9 +165,11 @@ float Esp_Util::roundFloat(float value, uint8_t decimals) {
     return ret;
 }
 
+/**
+* @brief Convert float to string 
+* (dtostrf is not good)
+*/
 string Esp_Util::floatToStr(float value, uint8_t decimals, bool comma) {
-
-	// Convert float to string (dtostrf is not good)
 
 	char str[10];
 	snprintf(str, 10, "%.*f", decimals, value);
@@ -178,21 +186,23 @@ string Esp_Util::floatToStr(float value, uint8_t decimals, bool comma) {
     return ret;
 }
 
+/**
+* @brief Convert int to string
+*/
 string Esp_Util::intToStr(uint32_t value) {
-
-	// Convert int to string
-
+	
 	char str[10];
 	snprintf(str, 10, "%d", value);
 	string ret = str;
 	return ret;
 }
 
+/**
+* @brief Format float
+*/
 string Esp_Util::formatFloat(float value, uint8_t intPlaces, uint8_t decPlaces, bool comma)
 {
-
-	// Format float
-
+	
     string ret = "";
 
     // Signal
@@ -201,6 +211,7 @@ string Esp_Util::formatFloat(float value, uint8_t intPlaces, uint8_t decPlaces, 
         value*=-1.0f;
         ret = '-';
     }
+
     // Integer
 
     float factor = ROUNDF(pow(10, decPlaces));
@@ -233,10 +244,11 @@ string Esp_Util::formatFloat(float value, uint8_t intPlaces, uint8_t decPlaces, 
 
 }
 
+/**
+* @brief Format numbers
+*/
 string Esp_Util::formatNumber(uint32_t value, uint8_t size, char insert) {
-
-	// Format numbers
-
+	
     // Putting zeroes in left
 
     string ret = "";
@@ -256,9 +268,10 @@ string Esp_Util::formatNumber(uint32_t value, uint8_t size, char insert) {
     return ret;
 }
 
+/**
+* @brief Format minutes
+*/
 string Esp_Util::formatMinutes(uint16_t minutes) {
-
-	// Format minutes
 
 	uint8_t hours = (minutes / (60 * 60));
 
@@ -280,9 +293,11 @@ string Esp_Util::formatMinutes(uint16_t minutes) {
 	return ret;
 }
 
+/**
+* @brief Split string with delimiters into a vector
+* seen it in: https://github.com/KjellKod/StringFix/blob/master/StringFix.cpp
+*/
 void Esp_Util::strSplit(vector<string>& tokens, const string& str, const string& delimiter) {
-
-	// Split string with delimiters into a vector - seen it in: https://github.com/KjellKod/StringFix/blob/master/StringFix.cpp
 
 	string::size_type start = str.find_first_not_of(delimiter, 0);
 	string::size_type stop = str.find_first_of(delimiter, start);

@@ -108,13 +108,17 @@ static TaskHandle_t xTaskMainHandler = NULL;
 
 ////// Main
 
+#ifndef ARDUINO // Not for Arduino
 extern "C" {
-	void app_main(void);
+	void app_main();
 }
+#endif
 
+/**
+ * @brief app_main of ESP-IDF 
+ */
 void app_main()
 {
-	// app_main do esp-idf
 
 	mLogActive = true; // To show initial messages
 
@@ -146,9 +150,10 @@ void app_main()
     return; 
 } 
 
+/**
+ * @brief Main Task - main processing 
+ */
 static void main_Task (void * pvParameters) { 
-
-	// Main Task - main processing 
 
 	logI ("Starting main Task"); 
 
@@ -354,9 +359,10 @@ static void main_Task (void * pvParameters) {
 
 }
 
+/**
+ * @brief Initializes the app
+ */
 void appInitialize(bool resetTimerSeconds) {
-
-	// Initializes the app
 
 	logD ("Initializing ..."); 
 
@@ -375,9 +381,11 @@ void appInitialize(bool resetTimerSeconds) {
 
 } 
 
+/**
+ * @brief Process the message received from BLE
+ */
 void processBleMessage (const string &message) {
 
-	// Process the message received from BLE
 	// This is to process ASCII (text) messagens - not binary ones
 
 	string response = "00:OK"; // Return default to indicate everything OK
@@ -596,10 +604,11 @@ void processBleMessage (const string &message) {
 
 } 
 
+/**
+ * @brief Check the voltage of the power supply (battery or charging via usb) 
+ * Used also if this project not have battery, to mobile app know that)
+ */
 static void checkEnergyVoltage (bool sendingStatus) {
-
-	// Check the voltage of the power supply (battery or charging via usb) 
-	// Used also if this project not have battery, to mobile app know that)
 
 	string energy = "";
 
@@ -661,11 +670,13 @@ static void checkEnergyVoltage (bool sendingStatus) {
 
 } 
 
-// Standby - enter in deep sleep
-
+/**
+ * @brief Standby - enter in deep sleep
+ */
 static void standby (const char *cause) {
 
 	// Enter in standby (standby off is reseting ESP32)
+	// Yet only support a button to control it, touchpad will too in future
 
 	// Debug
 
@@ -697,7 +708,6 @@ static void standby (const char *cause) {
 	} 
 
 #ifdef PIN_GROUND_VBAT
-
 	// Pin to ground resistor divider to measure voltage of battery
 	// To consume nothing more during deep sleep
 
@@ -742,10 +752,10 @@ static void standby (const char *cause) {
 #endif 
 } 
 
-
+/**
+ * @brief Show error and notifies the application error occurred
+ */
 void error (const char *message, bool fatal) {
-
-	// Notifies the application error occurred
 
 	// Debug
 
@@ -775,11 +785,12 @@ void error (const char *message, bool fatal) {
 
 } 
 
+/**
+ * @brief Reset the ESP32
+ */
 void restartESP32 () { 
 
-	// Reset the ESP32
-
-	// TODO: [ put your custom code here ]
+	// TODO: see it! if need, put your custom code here 
 
 	// Reinitialize 
 
@@ -787,9 +798,10 @@ void restartESP32 () {
 
 } 
 
+/**
+ * @brief Initial Debugging 
+ */
 static void debugInitial () {
-
-	// Initial Debugging 
 
 	logV ("Debugging is on now");
 
@@ -797,9 +809,10 @@ static void debugInitial () {
 
 } 
 
+/**
+ * @brief Cause an action on main_Task by task notification
+ */
 void IRAM_ATTR notifyMainTask(uint32_t action, bool fromISR) {
-
-	// Cause an action on main_Task by task notification
 
 	// Debug (for non ISR only) 
 

@@ -100,19 +100,17 @@ static void receive_Task(void *pvParameters);
 static void bleCallbackConnection();
 static void bleCallbackMTU();
 static void bleCallbackReceiveData(char* data, uint8_t size);
-}
+
+} // extern "C"
 
 //////// Methods
 
+/**
+* @brief Initialize the BLE server
+*/
 void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServerCallbacks) {
 
-	// Initialize the connection
-
 	logI("Initializing ble - device name=%s", deviceName);
-
-	///////// BLE
-
-	// Initialize the BLE
 
 	// Set the callbacks
 
@@ -142,9 +140,10 @@ void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServe
 
 }
 
+/**
+* @brief Finalize the BLE server
+*/
 void BleServer::finalize() {
-
-	// Ends
 
 #if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
 
@@ -166,25 +165,28 @@ void BleServer::finalize() {
 	// TODO: need also more ??? 
 }
 
+/**
+* @brief Turns on/off the logging for this module
+*/
 void BleServer::debug(bool on) {
-
-	// Turns on/off the logging for this module
 
 	mLogActive = on;
 
 }
 
+/**
+* @brief APP connected? (via BLE) 
+*/
 bool BleServer::connected() {
-
-	// APP connected? (via BLE)
 
 	return mConnected;
 
 }
 
+/**
+* @brief Send data to APP (via BLE)
+*/
 void BleServer::sendData(const char* data) {
-
-	// Send data to APP (via BLE)
 
 	if (!mConnected) {
 		logE("not connected");
@@ -246,10 +248,11 @@ extern "C" {
 
 #if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
 
+/**
+* @brief Task to receive data from BLE
+* use CPU 1 to process it
+*/
 static void receive_Task(void *pvParameters) {
-
-	// Task to receive data from BLE,
-	// to use CPU 1 to process it
 
 	logI("Initializing ble receive Task");
 
@@ -327,11 +330,13 @@ static void receive_Task(void *pvParameters) {
 
 #endif
 
-// BLE routines in C based on pcbreflux example
+////// BLE callbacks
 
+/**
+* @brief Callback for connection
+*/
 static void bleCallbackConnection() { // @suppress("Unused static function")
 
-	// Callback for connection
 	// TODO: this need a task too to run in CPU 1, if the connection process is heavy
 
 	if (ble_uart_server_ClientConnected()) { // Connected
@@ -361,17 +366,19 @@ static void bleCallbackConnection() { // @suppress("Unused static function")
 
 }
 
+/**
+* @brief Callback for MTU changed by BLE client (mobile APP)
+*/
 static void bleCallbackMTU() { // @suppress("Unused static function")
-
-	// Callback for MTU changed
 
 	logI("BLE MTU changed to %d",ble_uart_server_MTU());
 
 }
 
+/**
+* @brief Received data via BLE notification
+*/
 static void bleCallbackReceiveData(char *data, uint8_t size) { // @suppress("Unused static function")
-
-	// Received data via BLE notification
 
 	char aux[size + 1];
 	sprintf(aux, "%.*s", size, data);
@@ -422,6 +429,5 @@ static void bleCallbackReceiveData(char *data, uint8_t size) { // @suppress("Unu
 }
 
 } // Extern "C"
-
 
 //////// End

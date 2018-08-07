@@ -58,10 +58,14 @@ static bool mBleConnected = false;
 static string mBleLine = ""; 			// Line received via communication
 static bool mBleReceivingLine = false; 	// Receiving the characters of the line
 
-// Class MyBleServerCalllbacks - based on code of Kolban
-
+/**
+ * @brief Class MyBleServerCalllbacks - based on code of Kolban
+ */
 class MyBleServerCalllbacks: public BleServerCallbacks {
 
+	/**
+	 * @brief OnConnect - for connections
+	 */
 	void onConnect() {
 
 		// Ble connected
@@ -77,6 +81,9 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 
 	}
 
+	/**
+	 * @brief OnConnect - for disconnections
+	 */
 	void onDisconnect() {
 
 		// Ble disconnected
@@ -100,6 +107,9 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 
 	}
 
+	/**
+	 * @brief OnConnect - for receive data 
+	 */
 	void onReceive(char *data, uint8_t size) {
 
 		// Received data via BLE server - by callback
@@ -150,12 +160,12 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 	}
 };
 
-
 //////// Methods
 
+/**
+ * @brief Initialize the BLE Server
+ */
 void bleInitialize() {
-
-	// Initialize the BLE Server
 
 	Ble.initialize(BLE_DEVICE_NAME, new MyBleServerCalllbacks());
 
@@ -170,26 +180,29 @@ void bleInitialize() {
 	logI("BLE Server initialized!");
 }
 
+/**
+ * @brief Finish BLE
+ */
 void bleFinalize() {
-
-	// Finish BLE
-
+	
 	Ble.finalize();
 
 	logI("BLE Server finalized");
 }
 
+/**
+ * @brief Is an BLE client Connected ?
+ */
 bool bleConnected() {
-
-	// Connected ?
 
 	return mBleConnected;
 
 }
 
+/**
+ * @brief Send data to mobile app (via BLE)
+ */
 void bleSendData(string data) {
-
-	// Send data to mobile app (via BLE)
 
 	if (!mBleConnected) {
 		logE("BLE not connected");
@@ -214,9 +227,10 @@ void bleSendData(string data) {
 
 }
 
+/**
+ * @brief Check timeout on receipt of data (usefull if the message has splitted)
+ */
 void bleVerifyTimeouts() {
-
-	// Check timeout on receipt of data
 
 	if (mBleReceivingLine
 			&& (mTimeSeconds - mLastTimeReceivedData) > BLE_TIMEOUT_RECV_LINE) {

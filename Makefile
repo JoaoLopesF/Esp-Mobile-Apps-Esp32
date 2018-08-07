@@ -3,7 +3,9 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := esp32_ble_example # // TODO: see it! please change the name of your project
+# // TODO: see it! please change the name of your project
+
+PROJECT_NAME := esp32_ble_example
 									 
 COMPONENT_ADD_INCLUDEDIRS := components/include
 
