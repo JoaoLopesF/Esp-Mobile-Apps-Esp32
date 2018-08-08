@@ -61,6 +61,7 @@ This app example to Esp32, have advanced features like:
        (the mobile app, if it is possible, change it to 185 - can be up to 517)
       (the default size is only about 20)
     - Modular programming
+    - Based in mature code (I have ESP32 and mobile apps, since years ago)
     - Multicore optimization (if have 2 cores enabled)
     - Stand-by support with ESP32 deep-sleep
       (by a button, or by inativity time, no touchpad yet)
