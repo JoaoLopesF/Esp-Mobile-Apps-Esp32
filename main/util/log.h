@@ -53,7 +53,7 @@
 // Comment this for log always active
 // If have more modules, please define this variable as external in h file
 
-//#define LOG_ACTIVE_VAR mLogActive
+#define LOG_ACTIVE_VAR mLogActive
 
 #ifdef LOG_ACTIVE_VAR // Verify variable to show the log
 

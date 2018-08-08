@@ -51,10 +51,6 @@ with the exception of the C code for the BLE connection, based on the pcbreflux 
 
 Please access the www.esp32.com forum to more information about the Esp32 and ESP-IDF
 
-## For Arduino developers
-
-This ESP-IDF project has adapted to works in Arduino too (see below)
-
 ## Features
 
 This app example to Esp32, have advanced features like:
@@ -129,7 +125,7 @@ Modules of esp-idf example aplication
 
     - peripherals.*         - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
 
- - extras                 - extra things, as Arduino code and VSCode configurations
+ - extras                 - extra things, as VSCode configurations
 
 Generally you do not need to change anything in the util directory. 
 If you need, please add a Issue or a commit, to put it in repo, to help a upgrades in util
@@ -168,7 +164,8 @@ And enjoy :-)
 
 ## For Arduino developers
 
-Please see README.md in Arduino directory
+I will made this too Arduino developers in future,
+after I finished Part II and III (mobile app samples).
 
 ## Feedback and contribution
 

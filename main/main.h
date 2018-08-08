@@ -82,7 +82,7 @@ extern void app_main();
 
 extern void appInitialize(bool resetTimerSeconds);
 extern void notifyMainTask(uint32_t action, bool fromISR=false);
-extern void processBleMessage(const string& menssage);
+extern void processBleMessage(const string& message);
 extern void error(const char* message, bool fatal=false);
 extern void restartESP32();
 

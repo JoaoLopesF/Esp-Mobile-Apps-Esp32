@@ -76,7 +76,12 @@ class Esp_Util
 
 /////// Macros
 
+#ifndef ARDUINO // To ESP-IDF code
+
 #define delay(n) vTaskDelay(n / portTICK_PERIOD_MS)
+#define millis() (uint32_t)(esp_timer_get_time() / 1000)
+
+#endif
 
 #endif /* UTIL_ESP_UTIL_H_ */
 

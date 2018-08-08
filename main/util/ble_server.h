@@ -10,6 +10,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "sdkconfig.h"
+
 // C++
 
 #include <string>
@@ -17,22 +22,33 @@ using std::string;
 
 ////// Defines
 
-// Ble
+//// BLE
 
-#define BLE_MAX_SIZE_SEND GATTS_CHAR_VAL_LEN_MAX
-#define BLE_MAX_SIZE_RECV GATTS_CHAR_VAL_LEN_MAX
+// Maximum size of message -> from ble_uart_server
 
-#define BLE_TIMEOUT_RECV_LINE 3
+#define BLE_MSG_MAX_SIZE GATTS_CHAR_VAL_LEN_MAX
 
-#define BLE_TASK_RECEV_PRIOR 5
+// Timeout of receive line, need to control the join of splited messages (in millis)
+
+#define BLE_TIMEOUT_RECV_LINE 1500
+
+// BLE Task for events
+// Optimized do CPU 1, if possible
+// Due ESP-IDF BLE stuff and his callbacks runs in CPU 0
+// You can force it to CPU 0, if needed
 
 #if !CONFIG_FREERTOS_UNICORE
-	#define BLE_TASK_RECEB_CPU 1
-#else
-	#define BLE_TASK_RECEB_CPU 0
-#endif
+	
+	// Task
 
-#define BLE_SIZE_QUEUE_RECV 5
+	#define BLE_EVENTS_TASK_CPU 1
+	#define BLE_EVENTS_TASK_PRIOR 5
+
+	// Events (notifications)
+
+	#define BLE_EVENT_CONNECTION 	1
+	#define BLE_EVENT_RECEIVE 		2
+#endif
 
 ////// Classes
 
@@ -45,18 +61,18 @@ class BleServer
 {
 	public:
 
-		void initialize(const char* deviceName, BleServerCallbacks* pBleServerCallbacks);
+		void initialize(const char*, BleServerCallbacks*);
 		void finalize();
 		bool connected();
-		void sendData(const char*);
-		void debug(bool);
+		void send(const char*);
 
 	private:
 
+		void processEventConnection();
+		void processEventReceive();
 };
 
-
-// Callbacks - based in Kolban callback example
+// Callbacks - based in Kolban BLE callback example code
 
 class BleServerCallbacks {
 
@@ -64,10 +80,10 @@ public:
 	virtual ~BleServerCallbacks() {}
 	virtual void onConnect() = 0;
 	virtual void onDisconnect() = 0;
-	virtual void onReceive(char* data, uint8_t size) = 0;
+	virtual void onReceive(const char* message) = 0;
 
 };
 
-#endif /* MAIN_BLE_H_ */
+#endif /* UTIL_BLE_SERVER_H_ */
 
 //////// End

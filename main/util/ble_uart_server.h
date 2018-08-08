@@ -13,7 +13,7 @@ extern "C" {
 #include "esp_err.h"
 #include "esp_bt.h"
 
-#include "../util/log.h"
+#include "log.h"
 
 #define GATTS_SERVICE_UUID   0x0001
 //#define GATTS_CHAR_UUID      0xFF01
@@ -31,20 +31,25 @@ extern "C" {
 //#define BLE_TX_POWER ESP_PWR_LVL_N14 // Power TX lowerest -14db -- comment it to default 
 									   // Only for esp-idf v3.1 or higher
 
-// Log
+// Log macros - this is to reduce number of logging
 
-// Without logging output (please comment 2 ble_logD definitions below)
-//#define ble_logD(fmt, ...)
-
+// #define BLE_DEBUG true	// Show debug logging ? (comment to disable)
+							// Only if necessary debug ESP-IDF BT/BLE stuff
+#ifndef BLE_DEBUG
+// Without logging output 
+#define ble_logD(fmt, ...)
+#else
 // With logging output
-#define ble_logD(fmt, ...) logD(fmt, ##__VA_ARGS__)
+//#define ble_logD(fmt, ...) logD(fmt, ##__VA_ARGS__)
+#endif
 
 // Log of errors
 #define ble_logE(fmt, ...) logE(fmt, ##__VA_ARGS__)
 
-// Prototypes - public
+// Prototypes added to esp_uart_server code - public
 
 esp_err_t ble_uart_server_Initialize(const char* device_name);
+esp_err_t ble_uart_server_Finalize();
 void ble_uart_server_SetCallbackConnection(void (*callbackConnection)(),
 		void (*callbackMTU)());
 bool ble_uart_server_ClientConnected();

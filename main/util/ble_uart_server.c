@@ -692,6 +692,9 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
 
 // Public
 
+/**
+* @brief Initialize ble and ble server
+*/
 esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	// Device Name
@@ -772,13 +775,32 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 	esp_ble_gap_register_callback (gap_event_handler);
 	esp_ble_gatts_app_register (BLE_PROFILE_APP_ID);
 
-	// Debug
+	// Debug (logI to show allways)
 
-	ble_logD ("BLE UART server initialized, device name %s", mDeviceName);
+	logI("BLE UART server initialized, device name %s", mDeviceName);
 
 	return ESP_OK;
 }
 
+/**
+* @brief Finalize ble server and ble 
+*/
+esp_err_t ble_uart_server_Finalize() {
+
+	// TODO: verify if need something more
+
+	esp_err_t ret = esp_bt_controller_deinit();
+
+	// Debug (logI to show allways)
+
+	logI("BLE UART server finalized");
+
+	return ret;
+}
+
+/**
+* @brief Set callback for conection/disconnection
+*/
 void ble_uart_server_SetCallbackConnection(void (*callbackConnection)(), void (*callbackMTU)()) {
 
 	// Set the callbacks
@@ -787,13 +809,9 @@ void ble_uart_server_SetCallbackConnection(void (*callbackConnection)(), void (*
 	mCallbackMTU= callbackMTU;
 }
 
-bool ble_uart_server_ClientConnected () {
-
-	// Client connected to UART server?
-
-	return mConnected;
-}
-
+/**
+* @brief Set callback to receiving data
+*/
 void ble_uart_server_SetCallbackReceiveData(void (*callbackReceived) (char* data, uint8_t size)) {
 
 	// Arrow callback to receive data
@@ -801,6 +819,19 @@ void ble_uart_server_SetCallbackReceiveData(void (*callbackReceived) (char* data
 	mCallbackReceivedData = callbackReceived;
 }
 
+/**
+* @brief Is a client connected to UART server?
+*/
+bool ble_uart_server_ClientConnected () {
+
+	// Client connected to UART server?
+
+	return mConnected;
+}
+
+/**
+* @brief Send data to client (mobile App)
+*/
 esp_err_t ble_uart_server_SendData(const char* data, uint8_t size) {
 
 	ble_logD ("data [%d] : %s", size, data);
@@ -833,6 +864,9 @@ esp_err_t ble_uart_server_SendData(const char* data, uint8_t size) {
 
 }
 
+/**
+* @brief Get actual MTU of client (mobile app)
+*/
 uint16_t ble_uart_server_MTU() {
 
 	// Returns the received MTU or default

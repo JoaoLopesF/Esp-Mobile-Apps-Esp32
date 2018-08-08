@@ -11,22 +11,6 @@
  * TODO list: 
  */ 
 
-/** 
- * Bluetooth messages 
- * ----------------------
- * Format: nn:payload (where nn is code of message and payload is content, can be delimited too) 
- * --------------------------- 
- * Messages codes:
- * 01 Start 
- * 02 Version 
- * 03 Power status(USB or Battery?) 
- * 70 Echo debug
- * 80 Feedback 
- * 98 Reinitialize
- * 99 Standby (enter in deep sleep)
- *
- * // TODO: see it! - keep it update
- **/
 
 ///// Includes
 
@@ -48,7 +32,7 @@
 #include <string>
 using namespace std;
 
-// Util
+// mUtil
 
 #include "util/log.h"
 #include "util/esp_util.h"
@@ -75,15 +59,15 @@ static const char *TAG = "main";
 
 // Utility 
 
-static Esp_Util &Util = Esp_Util::getInstance(); 
+static Esp_Util& mUtil = Esp_Util::getInstance(); 
 
 // Times and intervals 
 
 uint32_t mTimeSeconds = 0; 			// Current time in seconds (for timeouts calculations)
 
-uint32_t mLastTimeReceivedData = 0; // time of receipt of last line via
-
 uint32_t mLastTimeFeedback = 0; 	// Indicates the time of the last feedback message
+
+uint32_t mLastTimeReceivedData = 0; // time of receipt of last line via
 
 // Log active (debugging)? 
 
@@ -126,7 +110,7 @@ void app_main()
 
 	// Initialize the Esp32 
 
-	Util.esp32Initialize();
+	mUtil.esp32Initialize();
 
 	// Initialize Peripherals
 
@@ -152,6 +136,7 @@ void app_main()
 
 /**
  * @brief Main Task - main processing 
+ * Is a second timer to process, adquiry data, send responses to mobile App, control timeouts, etc.
  */
 static void main_Task (void * pvParameters) { 
 
@@ -177,25 +162,21 @@ static void main_Task (void * pvParameters) {
 
 	////// Loop 
 
-	uint32_t notify; // Notify variable 
+	uint32_t notification; // Notification variable 
 
 	for (;;) {
 
-		// Init notification 
-		
-		notify = 0; 
+		// Wait for the time or something notified (seen in the FreeRTOS example) 
 
-		// Wait for the time or or something notified (seen in the FreeRTOS example) 
-
-		if (xTaskNotifyWait (0, 0xffffffff, &notify, xTicks) == pdPASS) { 
+		if (xTaskNotifyWait (0, 0xffffffff, &notification, xTicks) == pdPASS) { 
 
 			// Action by task notification
 
-			logD ("Notification received -> %d", notify); 
+			logD ("Notification received -> %u", notification); 
 
 			bool reset_timer = false;
 
-			switch (notify) {
+			switch (notification) {
 
 				case MAIN_TASK_ACTION_RESET_TIMER: 	// Reset timer
 					reset_timer = true;
@@ -266,14 +247,13 @@ static void main_Task (void * pvParameters) {
 							((mChargingVUSB)?'Y':'N'), mSensorVBat,
 							esp_get_free_heap_size());
 #else
-				logD("* Secs=%d", mTimeSeconds);
+				logD("* Time seconds=%d", mTimeSeconds);
 #endif
-			} else { // Verbose
-
-				logV("* Secs=%d", mTimeSeconds);
+			} else { // Verbose //TODO: see it! put here that you want see each second
+							    // If have, please add our variables and uncomment it
+				// logV("* Time seconds=%d", mTimeSeconds);
 
 			}
-
 		}
 
 #ifdef MAX_TIME_INACTIVE
@@ -313,10 +293,6 @@ static void main_Task (void * pvParameters) {
 
 		/////// Routines with only if BLE is connected
 
-		// Check timeouts in BLE 
-
-		bleVerifyTimeouts();
-
 #if HAVE_BATTERY
 		// Check the voltage of battery/charging
 
@@ -350,8 +326,6 @@ static void main_Task (void * pvParameters) {
 
 	////// End 
 
-	logI ("End of main task");
-
 	// Delete this task 
 
 	vTaskDelete (NULL); 
@@ -383,8 +357,9 @@ void appInitialize(bool resetTimerSeconds) {
 
 /**
  * @brief Process the message received from BLE
+ * Note: this routine is in main.cc due major resources is here
  */
-void processBleMessage (const string &message) {
+void processBleMessage (const string& message) {
 
 	// This is to process ASCII (text) messagens - not binary ones
 
@@ -421,7 +396,7 @@ void processBleMessage (const string &message) {
 		return; 
 	} 
 
-	logV("Code -> %u Message -> %s", code, Util.strExpand (message).c_str());
+	logV("Code -> %u Message -> %s", code, mUtil.strExpand (message).c_str());
 
 	// Considers the message received as feedback also 
 
@@ -501,7 +476,7 @@ void processBleMessage (const string &message) {
 		}
 		break; 
 	
-	// TODO: see it! Please put here custom menssages
+	// TODO: see it! Please put here custom messages
 
 	case 70: // Echo (for test purpose)
 		{
@@ -638,7 +613,7 @@ static void checkEnergyVoltage (bool sendingStatus) {
 
 		energy="03:";
 		energy.append ((mChargingVUSB)? "VUSB:": "BAT:");
-		energy.append (Util.intToStr(readVBAT));
+		energy.append (mUtil.intToStr(readVBAT));
 		energy.append (1u, ':'); 
 
 	}

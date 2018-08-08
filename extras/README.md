@@ -1,4 +1,4 @@
-# Esp-Idf-Mobile-App
+# Esp-Idf-Mobile-App-Esp32
 
 ## Extras
 
@@ -9,9 +9,6 @@
 
     Just copy the _.vscode_ to parent directory
 
-    Execute VSCode and enjoyx
+    Execute VSCode and enjoy
 
-### Arduino
 
-    - Please open the README in Arduino directory
-    

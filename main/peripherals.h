@@ -23,7 +23,7 @@
 
 // Standby button for deep sleep - comment to disable this - please see schematics exmaples
 
-//#define PIN_BUTTON_STANDBY GPIO_NUM_4
+#define PIN_BUTTON_STANDBY GPIO_NUM_4
 
 #ifdef HAVE_BATTERY
 

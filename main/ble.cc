@@ -43,25 +43,16 @@ static const char* TAG = "ble-server";
 
 // Server class
 
-static BleServer Ble;
+static BleServer mBleServer;
 
-// Utility class
+// Utility class - uncomment if you need
 
-static Esp_Util& Util = Esp_Util::getInstance(); // @suppress("Unused variable declaration in file scope")
-
-// BLE connected
-
-static bool mBleConnected = false;
-
-// Line
-
-static string mBleLine = ""; 			// Line received via communication
-static bool mBleReceivingLine = false; 	// Receiving the characters of the line
+//static Esp_Util& mUtil = Esp_Util::getInstance(); // @suppress("Unused variable declaration in file scope")
 
 /**
  * @brief Class MyBleServerCalllbacks - based on code of Kolban
  */
-class MyBleServerCalllbacks: public BleServerCallbacks {
+class MyBleServerCallbacks: public BleServerCallbacks {
 
 	/**
 	 * @brief OnConnect - for connections
@@ -70,14 +61,11 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 
 		// Ble connected
 
-		mBleConnected = true;
-
 		logD("Ble connected!");
 
-		// Clear variables
+		// Flag app not connected - it only setted where message initial is received
 
-		mBleLine = "";
-		mBleReceivingLine = false;
+		mAppConnected = false;
 
 	}
 
@@ -88,16 +76,9 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 
 		// Ble disconnected
 
-		mBleConnected = false;
-
 		logD("Ble disconnected!");
 
-		// Clear variables
-
-		mBleLine = "";
-		mBleReceivingLine = false;
-
-		// Flag app not connected
+		// Flag app not connected 
 
 		mAppConnected = false;
 
@@ -110,53 +91,15 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
 	/**
 	 * @brief OnConnect - for receive data 
 	 */
-	void onReceive(char *data, uint8_t size) {
+	void onReceive(const char *message) {
 
 		// Received data via BLE server - by callback
 
-		char aux[size + 1];
-		sprintf(aux, "%.*s", size, data);
+		// logV("BLE recv :%s", Util.strExpand(aux).c_str());
 
-		// logV("BLE recv (%d):%s", tamanho, Util.strExpand(aux).c_str());
+		// Process the message (main.cc)
 
-		// Mark the timeSeconds of the last receipt
-
-		mLastTimeReceivedData = mTimeSeconds;
-
-		// Process the received data
-
-		for (uint8_t i = 0; i < size; i++) {
-
-			char character = data[i];
-
-			// Process the message upon receiving a new line
-
-			if (character == '\n') {
-
-				logD("BLE line receive: %s", mBleLine.c_str());
-
-				mBleReceivingLine = false;
-
-				// Process the received line
-
-				if (mBleLine.length() > 0) {
-
-					// Process the message (main.cc)
-					processBleMessage(mBleLine);
-
-				}
-
-				mBleLine = "";
-
-			} else if (character != '\r') {
-
-				// Concat
-
-				mBleLine.append(1u, character);
-				mBleReceivingLine = true;
-
-			}
-		}
+		processBleMessage(message);
 	}
 };
 
@@ -167,13 +110,7 @@ class MyBleServerCalllbacks: public BleServerCallbacks {
  */
 void bleInitialize() {
 
-	Ble.initialize(BLE_DEVICE_NAME, new MyBleServerCalllbacks());
-
-	Ble.debug(true); // Comment it to disable log debug
-
-	// Reserves the bytes for strings
-
-	mBleLine.reserve(185); // 185 is a default MTU, if is possible
+	mBleServer.initialize(BLE_DEVICE_NAME, new MyBleServerCallbacks());
 
 	// Debug
 
@@ -185,7 +122,7 @@ void bleInitialize() {
  */
 void bleFinalize() {
 	
-	Ble.finalize();
+	mBleServer.finalize();
 
 	logI("BLE Server finalized");
 }
@@ -195,7 +132,7 @@ void bleFinalize() {
  */
 bool bleConnected() {
 
-	return mBleConnected;
+	return mBleServer.connected();
 
 }
 
@@ -204,7 +141,7 @@ bool bleConnected() {
  */
 void bleSendData(string data) {
 
-	if (!mBleConnected) {
+	if (!mBleServer.connected()) {
 		logE("BLE not connected");
 		return;
 	}
@@ -223,24 +160,8 @@ void bleSendData(string data) {
 
 	// Send by Ble Server
 
-	Ble.sendData(data.c_str());
+	mBleServer.send(data.c_str());
 
-}
-
-/**
- * @brief Check timeout on receipt of data (usefull if the message has splitted)
- */
-void bleVerifyTimeouts() {
-
-	if (mBleReceivingLine
-			&& (mTimeSeconds - mLastTimeReceivedData) > BLE_TIMEOUT_RECV_LINE) {
-
-		mBleReceivingLine = false;
-		mBleLine = "";
-
-		logD("receive timeout - line");
-
-	}
 }
 
 //////// End

@@ -29,7 +29,6 @@ extern void bleInitialize();
 extern void bleFinalize();
 extern void bleSendData(string data);
 extern bool bleConnected();
-extern void bleVerifyTimeouts();
 
 #endif /* MAIN_BLE_H_ */
 

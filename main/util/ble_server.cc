@@ -16,7 +16,6 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/queue.h"
 #include "esp_system.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
@@ -48,54 +47,40 @@ static const char* TAG = "ble_server";	// Log tag
 
 static bool mConnected = false;			// Connected ?
 
-static bool mLogActive = false;			// Log active ?
+static string mLineBuffer = ""; 		// Line buffer of data received via communication 
+static string mMessageRecv = ""; 		// Menssage received 
 
-static Esp_Util& Util = Esp_Util::getInstance(); // @suppress("Unused variable declaration in file scope")
+// Util
+
+static Esp_Util& mUtil = Esp_Util::getInstance(); // @suppress("Unused variable declaration in file scope")
 
 // Callbacks
 
-BleServerCallbacks* mBleServerCallbacks;
-
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
-
-// Data for receiving queue
-
-typedef struct {
-	char data[BLE_MAX_SIZE_RECV + 1];
-	uint8_t size;
-} BleQueueReceb_t;
-
-#endif
+static BleServerCallbacks* mBleServerCallbacks;
 
 ////// FreeRTOS
 
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
 
-// Task for receiving data
+// Task for events
 
-TaskHandle_t xTaskReceiveHandle = NULL;
-
-// BLE Server receiving queue
-
-static QueueHandle_t xBleQueueReceive;
+static TaskHandle_t xTaskEventsHandle = NULL;
 
 #endif
 
 ///// Protoypes - private
 
-// Task FreeRTOS
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
 
-extern "C" {
+// Task FreeRTOS for events
 
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
-
-// Receiving data task
-
-static void receive_Task(void *pvParameters);
+static void events_Task(void *pvParameters);
 
 #endif
 
 // Callbacks for esp_uart_server
+
+extern "C" {
 
 static void bleCallbackConnection();
 static void bleCallbackMTU();
@@ -110,7 +95,7 @@ static void bleCallbackReceiveData(char* data, uint8_t size);
 */
 void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServerCallbacks) {
 
-	logI("Initializing ble - device name=%s", deviceName);
+	logI("Initializing BLE Server - device name=%s", deviceName);
 
 	// Set the callbacks
 
@@ -124,17 +109,24 @@ void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServe
 			bleCallbackMTU);
 	ble_uart_server_SetCallbackReceiveData(bleCallbackReceiveData);
 
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
 
-	// Create receive task in core 1
+	// Create task for events in core 1
 
-	xTaskCreatePinnedToCore(&receive_Task, "bleReceive_Task", 10240, NULL,
-			BLE_TASK_RECEV_PRIOR, &xTaskReceiveHandle,
-			BLE_TASK_RECEB_CPU);
+	xTaskCreatePinnedToCore(&events_Task, "bleEvents_Task", 5120, NULL,
+			BLE_EVENTS_TASK_PRIOR, &xTaskEventsHandle,
+			BLE_EVENTS_TASK_CPU);
 
-	logI("Task for receipts started");
+	logI("Task for events started");
 
 #endif
+
+	// Reserves the bytes for strings avoid fragmetaion
+
+	mLineBuffer.reserve(BLE_MSG_MAX_SIZE); 
+	mMessageRecv.reserve(BLE_MSG_MAX_SIZE); 
+
+	// Debug 
 
 	logI("BLE initialized");
 
@@ -145,37 +137,25 @@ void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServe
 */
 void BleServer::finalize() {
 
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
 
-	if (xTaskReceiveHandle != NULL) {
+	if (xTaskEventsHandle != NULL) {
 
-		vTaskDelete(xTaskReceiveHandle);
+		vTaskDelete(xTaskEventsHandle);
 
-		// Delete a queue
-
-		if (xBleQueueReceive != NULL) {
-			vQueueDelete(xBleQueueReceive);
-		}
-
-		logI("Task ble receive encerrada");
+		logI("Task for ble events deleted");
 	}
 
 #endif
 
-	// TODO: need also more ??? 
-}
+	// Finalize it
 
-/**
-* @brief Turns on/off the logging for this module
-*/
-void BleServer::debug(bool on) {
-
-	mLogActive = on;
+	ble_uart_server_Finalize();
 
 }
 
 /**
-* @brief APP connected? (via BLE) 
+* @brief Is client (mobile App) connected? (via BLE) 
 */
 bool BleServer::connected() {
 
@@ -184,9 +164,9 @@ bool BleServer::connected() {
 }
 
 /**
-* @brief Send data to APP (via BLE)
+* @brief Send data to APP (by BLE)
 */
-void BleServer::sendData(const char* data) {
+void BleServer::send(const char* data) {
 
 	if (!mConnected) {
 		logE("not connected");
@@ -197,17 +177,17 @@ void BleServer::sendData(const char* data) {
 
 	uint8_t size = strlen(data);
 
-	logV("BLE [%d] -> %s", size, Util.strExpand(data).c_str());
+	logV("BLE message [%d] -> %s", size, mUtil.strExpand(data).c_str());
 
-	// Maximum of the sending (now it is via MTU)
+	// Maximum of the sending (now it is by ble_uart_server current MTU)
 
 	uint16_t maximum = ble_uart_server_MTU();
 
-	if (maximum > BLE_MAX_SIZE_SEND) {
-		maximum = BLE_MAX_SIZE_SEND;
+	if (maximum > BLE_MSG_MAX_SIZE) {
+		maximum = BLE_MSG_MAX_SIZE;
 	}
 
-	// Send data, respecting the maximum size
+	// Send data, respecting the maximum size, spliting if necessary
 
 	char send[maximum + 1];
 
@@ -223,9 +203,9 @@ void BleServer::sendData(const char* data) {
 
 			// Send the data
 
-			if (mLogActive && size > maximum) { // Only log if needing split
+			if (size > maximum) { // Only log if needing split
 				logV("BLE sending part [%d] -> %s [max=%d]",
-						posSend, Util.strExpand(send).c_str(), maximum);
+						posSend, mUtil.strExpand(send).c_str(), maximum);
 			}
 
 			// BLE routines in C based on pcbreflux example
@@ -242,102 +222,13 @@ void BleServer::sendData(const char* data) {
 	}
 }
 
-///// Private - code in C
-
-extern "C" {
-
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
+///// Privates 
 
 /**
-* @brief Task to receive data from BLE
-* use CPU 1 to process it
+* @brief Process event for connection/disconnection
+* This code is called or by event task (CPU 1) or direct (no event task) 
 */
-static void receive_Task(void *pvParameters) {
-
-	logI("Initializing ble receive Task");
-
-	// Create a queue to send queue data
-
-	xBleQueueReceive = xQueueCreate(BLE_SIZE_QUEUE_RECV, sizeof(BleQueueReceb_t));
-
-	if (xBleQueueReceive == NULL) {
-		logE("Error occurred while creating queue");
-	}
-
-	/// Data to receive from the Ble Server queue
-
-	BleQueueReceb_t dataQueue;
-
-	////// Loop
-
-	for (;;) {
-
-		// Expect to receive something from the Ble Server queue
-		// Adopted this logic to force processing on CPU 1
-
-		BaseType_t ret = xQueueReceive(xBleQueueReceive, &dataQueue, portMAX_DELAY);
-
-		if (ret == pdPASS) {
-
-			// Check the queue
-
-			if (dataQueue.size > 0) {
-
-				// Data received
-
-				if (mLogActive) {
-					logV("queue -> extracted data (free %d), making the callback",
-							uxQueueSpacesAvailable(xBleQueueReceive));
-				}
-
-				// Callback
-
-				if (mBleServerCallbacks) {
-					mBleServerCallbacks->onReceive(dataQueue.data,
-							dataQueue.size);
-				}
-
-			} else {
-
-				// Notice
-
-				logE("queue_task -> queue -> tam 0!!!");
-			}
-
-		} else {
-
-			// Notice
-
-			logE("queue_task -> error!");
-		}
-
-	}
-
-	////// End
-
-	logI ("receive task closed");
-
-	// Dete a queue
-
-	if (xBleQueueReceive != NULL) {
-		vQueueDelete(xBleQueueReceive);
-	}
-
-	// Delete this task
-
-	vTaskDelete(NULL);
-}
-
-#endif
-
-////// BLE callbacks
-
-/**
-* @brief Callback for connection
-*/
-static void bleCallbackConnection() { // @suppress("Unused static function")
-
-	// TODO: this need a task too to run in CPU 1, if the connection process is heavy
+void processEventConnection() {
 
 	if (ble_uart_server_ClientConnected()) { // Connected
 
@@ -354,6 +245,7 @@ static void bleCallbackConnection() { // @suppress("Unused static function")
 	} else { // Disconnected
 
 		logI ("BLE client disconnected");
+		
 		mConnected = false;
 
 		// Callback
@@ -361,8 +253,91 @@ static void bleCallbackConnection() { // @suppress("Unused static function")
 		if (mBleServerCallbacks) {
 			mBleServerCallbacks->onDisconnect();
 		}
-
 	}
+}
+
+/**
+* @brief Process event for receive messages (lines)
+* This code is called or by event task (CPU 1) or direct (no event task) 
+*/
+void processEventReceive() {
+
+	// Callback to data received
+
+	if (mBleServerCallbacks) {
+		mBleServerCallbacks->onReceive(mMessageRecv.c_str());
+	}
+
+	// Clear It
+
+	mMessageRecv = "";
+
+}
+
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
+
+/**
+* @brief Task for events to run callbacks in CPU 1
+*/
+static void events_Task(void *pvParameters) {
+
+	logI("Initializing ble events Task");
+
+	uint32_t notification; // Notification variable 
+
+	for (;;) {
+
+		// Wait something notified (seen in the FreeRTOS example) 
+
+		if (xTaskNotifyWait (0, 0xffffffff, &notification, portMAX_DELAY) == pdPASS) { 
+
+			// Process event by task notification
+
+			logD ("Event received -> %u", notification); 
+
+			switch (notification) {
+
+				case BLE_EVENT_CONNECTION: 	// Connection/disconection
+					processEventConnection();
+					break;
+				case BLE_EVENT_RECEIVE: 	// Receive message (line)
+					processEventReceive();
+					break;
+
+			}
+		}
+	}
+
+	////// End
+
+	// Delete this task
+
+	vTaskDelete(NULL);
+	xTaskEventsHandle = NULL;
+}
+
+#endif
+
+////// BLE callbacks from ble_uart_server
+
+extern "C" {
+
+/**
+* @brief Callback for connection
+*/
+static void bleCallbackConnection() { // @suppress("Unused static function")
+
+	// Process this event
+
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
+
+	xTaskNotify (xTaskEventsHandle, BLE_EVENT_CONNECTION, eSetValueWithOverwrite);
+
+#else // CPU 0 -> callback right here
+
+	processEventConnection();
+
+#endif
 
 }
 
@@ -380,52 +355,74 @@ static void bleCallbackMTU() { // @suppress("Unused static function")
 */
 static void bleCallbackReceiveData(char *data, uint8_t size) { // @suppress("Unused static function")
 
+	static uint32_t lastTime=0;// To control timeout of receving messages (lines)
+
+	// Verify time of last receipt, if line buffer is no empty
+
+	if (mLineBuffer.size() > 0 && 
+		(millis() - lastTime) >= BLE_TIMEOUT_RECV_LINE) {
+
+		// Timeout -> clear the buffer
+
+		logI("timeout - clear buffer");
+
+		mLineBuffer = "";
+
+	}
+
+	// Mark this time 
+
+	lastTime = millis();
+
+	// Received data via BLE server - by callback
+
 	char aux[size + 1];
 	sprintf(aux, "%.*s", size, data);
 
-	logV("BLE received [%d] : %s", size, Util.strExpand(aux).c_str());
+	logV("BLE received [%d] : %s", size, mUtil.strExpand(aux).c_str());
 	
-#if BLE_TASK_RECEB_CPU == 1 // Only if it is for CPU 1
+	// Process the received data
 
-	// Send data to the receiving queue
+	for (uint8_t i = 0; i < size; i++) {
 
-	// Store the data in the queue
+		char character = data[i];
 
-	BleQueueReceb_t dataQueue;
+		// Process the message upon receiving a new line
 
-	if (size > BLE_MAX_SIZE_RECV) {
-		size = BLE_MAX_SIZE_RECV;
-	}
+		if (character == '\n') { // New line
 
-	bzero(dataQueue.data, BLE_MAX_SIZE_RECV);
-	strncpy (dataQueue.data, data, size);
-	dataQueue.size = size;
+			if (mLineBuffer.length() > 0) { // Not empty ?
 
-	// Send the data to the queue (it waits if the queue is full)
+				// Copy buffer to message variable (necessary to task events not lose data)
 
-	if (xQueueSend (xBleQueueReceive, &dataQueue, portMAX_DELAY) == pdFAIL) {
+				mMessageRecv = mLineBuffer;
 
-		logE("Error putting data into queue");
+				logD("BLE line message received: %s", mMessageRecv.c_str());
 
-	} else {
+				// Process this event
 
-		//logV("given in queue %d", size);
-	}
+#ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
+
+				xTaskNotify (xTaskEventsHandle, BLE_EVENT_RECEIVE, eSetValueWithOverwrite);
 
 #else // CPU 0 -> callback right here
 
-	if (size> 0) {
-
-		// Callback
-
-		if (mBleServerCallbacks) {
-			mBleServerCallbacks-> onReceive (aux, size);
-		}
-
-	}
-
+				processEventReceive();
 #endif
+				// Clear buffer
 
+				mLineBuffer = "";
+
+			}
+
+		} else if (character != '\r') { // Not for CR, for safe
+
+			// Concat character to buffer
+
+			mLineBuffer.append(1u, character);
+
+		}
+	}
 }
 
 } // Extern "C"
