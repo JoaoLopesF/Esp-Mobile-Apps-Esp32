@@ -86,9 +86,8 @@ Example:
     * (where nn is code of message and payload is content, can be delimited too) 
     * --------------------------- 
     * Messages codes:
-    * 01 Start 
-    * 02 Version 
-    * 03 Power status(USB or Battery?) 
+    * 01 Initial 
+    * 10 Power status(USB or Battery?) 
     * 70 Echo debug
     * 80 Feedback 
     * 98 Reinitialize
@@ -110,23 +109,25 @@ I suggest you use a FreeRTOS task to agregate data after send.
 
 Modules of esp-idf example aplication
 
- - main                    - main directory of esp-idf
+ - EspApp                   - The ESP-IDF application
     
-    - util                  - utilities 
-        - ble_server.*      - ble server C++ wrapper class to ble_uart_server (in C)
-        - ble_uart_server.* - code in C, based on pcbreflux code
-        - esp_util.*        - general utilities
-        - fields.*          - class to split text delimited in fields
-        - log.h             - macros to improve esp-idf logging
-        - median_filter.h   - running median filter to ADC readings
-    
-    - ble.*                 - ble code of project (uses ble_server and callbacks)
+    - main                    - main directory of esp-idf
+        
+        - util                  - utilities 
+            - ble_server.*      - ble server C++ wrapper class to ble_uart_server (in C)
+            - ble_uart_server.* - code in C, based on pcbreflux code
+            - esp_util.*        - general utilities
+            - fields.*          - class to split text delimited in fields
+            - log.h             - macros to improve esp-idf logging
+            - median_filter.h   - running median filter to ADC readings
+        
+        - ble.*                 - ble code of project (uses ble_server and callbacks)
 
-    - main.*                - main code of project
+        - main.*                - main code of project
 
-    - peripherals.*         - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
+        - peripherals.*         - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
 
- - extras                 - extra things, as VSCode configurations
+ - Extras                 - extra things, as VSCode configurations
 
 Generally you do not need to change anything in the util directory. 
 If you need, please add a Issue or a commit, to put it in repo, to help a upgrades in util
