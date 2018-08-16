@@ -1,0 +1,51 @@
+{
+    "env": {
+        "idf_path": "[PUT HERE THE PATH]/esp-idf",
+        "xtensa_path": "[PUT HERE THE PATH]/xtensa-esp32-elf"
+    },
+    "configurations": [
+        {
+            "name": "Esp-Idf",
+            "browse": {
+                "path": [
+                    "[PUT HERE THE PATH]/xtensa-esp32-elf/include",
+                    "${idf_path}/components",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${xtensa_path}/include",
+                "${idf_path}/components",
+                "${idf_path}/components/esp32/include",
+                "${idf_path}/components/heap/include",
+                "${idf_path}/components/newlib/include",
+                "${idf_path}/components/freertos/include",
+                "${idf_path}/components/nvs_flash/include",
+                "${idf_path}/components/driver/include",
+                "${idf_path}/components/log/include",
+                "${idf_path}/components/bt/include",
+                "${idf_path}/components/bt/bluedroid/api/include/api",
+                "${idf_path}/components/bt/bluedroid/bta/include/bta",
+                "${idf_path}/components/soc/esp32/include",
+                "${idf_path}/components/soc/include",
+                "${idf_path}/components/tcpip_adapter/include",
+                "${idf_path}/components/spi_flash/include",
+                "${idf_path}/components/lwip/include/lwip",
+                "${idf_path}/components/lwip/include/lwip/port",
+                "${workspaceFolder}",
+                "${workspaceFolder}/build/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
