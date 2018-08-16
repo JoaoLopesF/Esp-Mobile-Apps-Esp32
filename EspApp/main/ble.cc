@@ -138,8 +138,16 @@ bool bleConnected() {
 
 /**
  * @brief Send data to mobile app (via BLE)
+ * Note: char* wrapper
  */
-void bleSendData(string data) {
+void bleSendData(const char* data) {
+	string aux = data;
+	bleSendData(aux);
+}
+/**
+ * @brief Send data to mobile app (via BLE)
+ */
+void bleSendData(string& data) {
 
 	if (!mBleServer.connected()) {
 		logE("BLE not connected");
@@ -150,18 +158,22 @@ void bleSendData(string data) {
 
 	mLastTimeFeedback = mTimeSeconds;
 
-	// Add new line (need when split large messages)
-
-	data.append("\n");
-
 	// Debug
 
 	//logD("data [%u] -> %s", data.size(), Util.strExpand(data).c_str());
 
 	// Send by Ble Server
 
-	mBleServer.send(data.c_str());
+	mBleServer.send(data);
 
+}
+
+/**
+ * @brief Return the mac address
+ */
+const uint8_t* bleMacAddress() {
+
+	return mBleServer.getMacAddress();
 }
 
 //////// End

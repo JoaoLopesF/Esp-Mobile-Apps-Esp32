@@ -21,55 +21,101 @@
 
 //// Input pins
 
-// Standby button for deep sleep - comment to disable this - please see schematics exmaples
-
-#define PIN_BUTTON_STANDBY GPIO_NUM_4
-
-#ifdef HAVE_BATTERY
-
-	// Sensor 5V VUSB - comment to disable this - please see schematics exmaples
-
-	#define PIN_SENSOR_VUSB GPIO_NUM_16
-
-	// VBat sensor ground - comment to disable this - please see schematics exmaples
-
-	#define PIN_GROUND_VBAT GPIO_NUM_12
-
-#endif
-
-// Install ISR service ?
-
-#if defined PIN_BUTTON_STANDBY || defined PIN_SENSOR_VUSB
-
-	#define INSTALL_ISR_SERVICE true
-
-#endif
-
 ///// ADC
 
 // Filter median to ADC readings - comment if your project not use it
 
 #define MEDIAN_FILTER_READINGS 7
 
-// Sensor voltage battery - comment if your project not use it
+// Sensor voltage Bettery - comment if your project not use it
 
-//#define ADC_SENSOR_VBAT ADC1_CHANNEL_7
+#ifdef HAVE_BATTERY 
+	#define ADC_SENSOR_VBAT ADC1_CHANNEL_7
+#endif
+
+///// Digital
+
+#ifdef HAVE_STANDBY
+
+	// To enter/exit of deep sleep, actually supported only a button 
+	// In future will support to touchpad too
+
+	// Standby button for deep sleep - comment to disable this - please see schematics
+
+	#define PIN_BUTTON_STANDBY GPIO_NUM_4
+#endif
+
+#ifdef HAVE_BATTERY
+
+	// Sensor external voltage (USB or power supply) - comment to disable this - please see schematics
+	// Note: This only for 5v, if your project is powered by more than this, please 
+	// recalculate de resistor divider to put this in maximum 3v3
+	// More than this, you can burn the ESP32
+	// TODO: see it!
+
+	#define PIN_SENSOR_VEXT GPIO_NUM_16
+
+	// VBAT sensor ground - comment to disable this - please see schematics
+
+	#define PIN_GROUND_VBAT GPIO_NUM_12
+
+	#ifdef PIN_GROUND_VBAT
+		// To ground only when reading VBAT, to reduce consupmition
+
+		// VBAT sensor ground by MOSFET - comment if without MOSFET - please see schematics
+
+		//#define PIN_GROUND_VBAT_MOSTFET true 
+
+		#ifdef PIN_GROUND_VBAT_MOSTFET
+			#define GPIO_LEVEL_READ_VBAT_ON 1
+			#define GPIO_LEVEL_READ_VBAT_OFF 0
+		#else
+			#define GPIO_LEVEL_READ_VBAT_ON 0
+			#define GPIO_LEVEL_READ_VBAT_OFF 1
+		#endif
+	#endif
+
+	// VBAT charging status - from charging chip status - please see schematics
+	// Note: it is tested in Lolin32 module with TP4054 charging chip
+	// For another chip, please verify it
+	
+	#define PIN_SENSOR_CHARGING GPIO_NUM_17
+
+#endif
+
+// Install ISR service ?
+
+#if defined PIN_BUTTON_STANDBY || defined PIN_SENSOR_VEXT || defined PIN_SENSOR_CHARGING
+
+	#define INSTALL_ISR_SERVICE true
+
+#endif
 
 ///// Output pins
 
-// Esp32 board led pin (it in some boards is 5, anothers is 2. comment to disable this)
+// Led status pin - comment to disable this
+// Can be a ESP32 board led (it in some boards is 5, anothers is 2)
+// or extern led
 
-//#define PIN_LED_ESP32 GPIO_NUM_5
-//#define PIN_LED_ESP32 GPIO_NUM_2
+#define PIN_LED_STATUS GPIO_NUM_5
+//#define PIN_LED_STATUS GPIO_NUM_2
 
 /////// Prototypes
 
 void peripheralsInitialize();
 void peripheralsFinalize();
 
-void gpioBlinkLedEsp32();
+void gpioBlinkLedStatus();
 
 void adcRead();
+
+//////// External variables
+
+#ifdef HAVE_BATTERY
+extern bool mGpioVEXT ;			// Powered by external voltage (USB or power supply) ?
+extern bool mGpioChgBattery ;	// Charging battery ?
+extern int16_t mAdcBattery;		// Voltage of battery by ADC
+#endif
 
 //////// Macros
 

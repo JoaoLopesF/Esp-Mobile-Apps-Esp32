@@ -24,7 +24,7 @@ extern "C" {
 #define BLE_MANUFACTURER_DATA_LEN  	4
 
 //#define GATTS_CHAR_VAL_LEN_MAX	22
-#define GATTS_CHAR_VAL_LEN_MAX		185 + 5 // Changed maximum to avoid split of messages
+#define GATTS_CHAR_VAL_LEN_MAX		185 - 5 // Changed maximum to avoid split of messages ( - 5 is for safe)
 
 #define BLE_PROFILE_APP_ID 0
 
@@ -57,6 +57,7 @@ void ble_uart_server_SetCallbackReceiveData(
 		void (*callbackReceived)(char* data, uint8_t size));
 esp_err_t ble_uart_server_SendData(const char* data, uint8_t size);
 uint16_t ble_uart_server_MTU();
+const uint8_t* ble_uart_server_MacAddress();
 
 #ifdef __cplusplus
 }

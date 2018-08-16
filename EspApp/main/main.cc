@@ -7,10 +7,27 @@
  * 0.1.0 	01/08/18 	First version 
  **/
 
+/**
+ * BLE text messages of this app
+ * -----------------------------
+ * Format: nn:payload
+ * (where nn is code of message and payload is content, can be delimited too)
+ * -----------------------------
+ * Messages codes:
+ * 01 Initial
+ * 10 Energy status(External or Battery?)
+ * 11 Informations about ESP32 device
+ * 70 Echo debug
+ * 80 Feedback
+ * 98 Restart (reset the ESP32)
+ * 99 Standby (enter in deep sleep)
+ *
+ * // TODO: see it! please remove that you not use and keep it updated
+ **/
+
 /*
  * TODO list: 
  */ 
-
 
 ///// Includes
 
@@ -32,7 +49,13 @@
 #include <string>
 using namespace std;
 
-// mUtil
+// C
+
+extern "C" {
+	int rom_phy_get_vdd33();
+}
+
+// Util
 
 #include "util/log.h"
 #include "util/esp_util.h"
@@ -47,9 +70,13 @@ using namespace std;
 ////// Prototypes
 
 static void main_Task(void *pvParameters) ;
-static void standby(const char*	cause) ;
+static void standby(const char*	cause, bool sendBLEMsg) ;
 static void debugInitial();
+static void sendInfo(Fields& fields);
+
+#ifdef HAVE_BATTERY
 static void checkEnergyVoltage (bool sendingStatus);
+#endif
 
 ////// Variables 
 
@@ -77,13 +104,6 @@ bool mLogActive = false;
 
 bool mAppConnected = false; // Indicates connection when receiving message 01: 
 
-/// Sensors
-
-#ifdef HAVE_BATTERY
-bool mChargingVUSB = false;	// Charging by USB ?
-int16_t mSensorVBat = 0;	// Sensor de voltage of battery
-#endif
-
 ////// FreeRTOS
 
 // Task main
@@ -92,11 +112,9 @@ static TaskHandle_t xTaskMainHandler = NULL;
 
 ////// Main
 
-#ifndef ARDUINO // Not for Arduino
 extern "C" {
 	void app_main();
 }
-#endif
 
 /**
  * @brief app_main of ESP-IDF 
@@ -128,7 +146,7 @@ void app_main()
 	// Logging
 
 #ifdef HAVE_BATTERY
-	//mLogActive = mChargingVUSB; // Activate only if plugged in USB - comment it to keep active
+	//mLogActive = mGpioVEXT; // Activate only if plugged in Powered by external voltage (USB or power supply) - comment it to keep active
 #endif
 
     return; 
@@ -153,6 +171,14 @@ static void main_Task (void * pvParameters) {
 	// Initializes app
 
 	appInitialize (false);
+
+	// Sensors values
+
+#if defined HAVE_BATTERY && defined PIN_SENSOR_CHARGING
+	// Use this to verify changes on this sensor
+	// Due debounce logic
+	bool lastChgBattery = mGpioChgBattery; 
+#endif
 
 	////// FreeRTOS 
 
@@ -182,10 +208,26 @@ static void main_Task (void * pvParameters) {
 					reset_timer = true;
 					break;
 
-				case MAIN_TASK_ACTION_STANDBY: 		// Enter in standby - to deep sleep not run in ISR
-					standby("Pressed button standby");
+				case MAIN_TASK_ACTION_STANDBY_BTN: 	// Enter in standby - to deep sleep not run in ISR
+					standby("Pressed button standby", true);
 					break;
 
+				case MAIN_TASK_ACTION_STANDBY_MSG: 	// Enter in standby - to deep sleep not run in ISR
+					standby ("99 code msg - standby", false);
+					break;
+#ifdef HAVE_BATTERY
+				case MAIN_TASK_ACTION_SEN_VEXT: 	// Sensor of Powered by external voltage (USB or power supply) is changed - to not do it in ISR
+
+					checkEnergyVoltage(true);			
+					break;
+
+	#ifdef MAIN_TASK_ACTION_SEN_CHGR
+				case MAIN_TASK_ACTION_SEN_CHGR: 	// Sensor of battery charging is changed - to not do it in ISR
+
+					checkEnergyVoltage(true);			
+					break;
+	#endif
+#endif
 				// TODO: see it! If need put here your custom notifications
 
 				default:
@@ -220,17 +262,14 @@ static void main_Task (void * pvParameters) {
 
 		mTimeSeconds++; 
 
-#ifdef PIN_LED_ESP32
-		// Blink the board led of Esp32
+#ifdef PIN_LED_STATUS
+		// Blink the led of status (board led of Esp32 or external)
 
-		gpioBlinkLedEsp32();
+		gpioBlinkLedStatus();
 #endif
 
 		// Sensors readings by ADC
 
-#ifdef HAVE_BATTERY
-		bool lastChargingVUSB = mChargingVUSB;
-#endif
 		adcRead();
 
 		// TODO: see it! Put here your custom code to run every second
@@ -242,9 +281,11 @@ static void main_Task (void * pvParameters) {
 			if (mTimeSeconds % 5 == 0) { // Debug each 5 secs
 
 #ifdef HAVE_BATTERY
-				logD("* Secs=%d | sensors: vusb=%c vbat=%d | mem=%d",
+				logD("* Secs=%d | sensors: vext=%c charging=%c vbat=%d | mem=%d",
 							mTimeSeconds,
-							((mChargingVUSB)?'Y':'N'), mSensorVBat,
+							((mGpioVEXT)?'Y':'N'), 
+							((mGpioChgBattery)?'Y':'N'), 
+							mAdcBattery,
 							esp_get_free_heap_size());
 #else
 				logD("* Time seconds=%d", mTimeSeconds);
@@ -256,12 +297,13 @@ static void main_Task (void * pvParameters) {
 			}
 		}
 
-#ifdef MAX_TIME_INACTIVE
+#if defined MAX_TIME_INACTIVE && defined HAVE_S
+
 		////// Auto power off (standby) 
 		// If it has been inactive for the maximum time allowed, it goes into standby (soft off) 
 
 #ifdef HAVE_BATTERY
-		bool verifyInactive = !mChargingVUSB; // Only if it is not charging - to not abort debuggings;
+		bool verifyInactive = !mGpioVEXT; // Only if it is not powered by external voltage (USB or power supply) - to not abort debuggings;
 #else
 		bool verifyInactive = true;
 #endif
@@ -279,7 +321,7 @@ static void main_Task (void * pvParameters) {
 
 				// Set to standby (soft off) 
 
-				standby ("Attained maximum time of inactivity"); 
+				standby ("Attained maximum time of inactivity", true); 
 				return; 
 
 			} 
@@ -294,13 +336,19 @@ static void main_Task (void * pvParameters) {
 		/////// Routines with only if BLE is connected
 
 #if HAVE_BATTERY
+
 		// Check the voltage of battery/charging
 
-		if ((mTimeSeconds % 60 == 0) || 				// Each minute
-				(mChargingVUSB != lastChargingVUSB)) { 	// or changed VUSB
+		#ifdef PIN_SENSOR_CHARGING
+				// Verify if it is changed (due debounce logic when no battery plugged)
+				if (mGpioChgBattery != lastChgBattery) {
+					checkEnergyVoltage(true);
+				}
+		#endif
+
+		if ((mTimeSeconds % 60) == 0) { // Each minute
 
 			checkEnergyVoltage(false);
-
 		}
 #endif
 
@@ -318,6 +366,13 @@ static void main_Task (void * pvParameters) {
 
 			} 
 		}
+#endif
+
+		// Sensors values saving
+
+#if defined HAVE_BATTERY && defined PIN_SENSOR_CHARGING
+
+		lastChgBattery = mGpioChgBattery; 
 #endif
 
 		// TODO: see it! put here custom routines for when BLE is connected		
@@ -363,13 +418,13 @@ void processBleMessage (const string& message) {
 
 	// This is to process ASCII (text) messagens - not binary ones
 
-	string response = "00:OK"; // Return default to indicate everything OK
+	string response = ""; // Return response to mobile app
 
 	// --- Process the received line 
 
-	// Check the command
+	// Check the message
 
-	if (message.length () <2 ) {
+	if (message.length () < 2 ) {
 
 		error("Message length must have 2 or more characters");
 		return; 
@@ -384,12 +439,12 @@ void processBleMessage (const string& message) {
 
 	uint8_t code = 0;
 
-	if (!fields.isNum (0)) { // Not numerical
+	if (!fields.isNum (1)) { // Not numerical
 		error ("Non-numeric message code"); 
 		return; 
 	} 
 
-	code = fields.getInt (0);
+	code = fields.getInt (1);
 
 	if (code == 0) { // Invalid code
 		error ("Invalid message code"); 
@@ -404,7 +459,9 @@ void processBleMessage (const string& message) {
 
 	// Process the message 
 
-	bool sendEnergy = false; // Send response with the energy situation? 
+#ifdef HAVE_BATTERY
+	bool sendEnergy = false; // Send response with the energy situation too? 
+#endif
 
 	switch (code) { // Note: the '{' and '}' in cases, is to allow to create local variables, else give an error cross definition ... 
 
@@ -426,19 +483,45 @@ void processBleMessage (const string& message) {
 
 			mAppConnected = true;
 
+			// Inform to mobile app, if this device is battery powered and sensors 
+			// Note: this is important to App works with differents versions or models of device
+
+#ifdef HAVE_BATTERY
+
+			// Yes, is a battery powered device
+
+			string haveBattery = "Y";
+			
+#ifdef PIN_SENSOR_CHARGING
+
+			// Yes, have a sensor of charging
+			string sensorCharging = "Y";
+
+#else
+			// No have a sensor of charging
+			string sensorCharging = "N";
+#endif
 			// Send energy status (also if this project not have battery, to mobile app know it)
 
 			sendEnergy = true;
 
+#else
+
+			// No, no is a battery powered device
+
+			string haveBattery = "N";
+			string sensorCharging = "N";
+
+#endif
 			// Debug
 
 			bool turnOnDebug = false;
 
 #ifdef HAVE_BATTERY
 
-			// Turn on the debugging (if the USB cable is connected)
+			// Turn on the debugging (if the USB is connected)
 
-			if (mChargingVUSB && !mLogActive) {
+			if (mGpioVEXT && !mLogActive) {
 				turnOnDebug = true; 
 			} 
 #else
@@ -460,22 +543,36 @@ void processBleMessage (const string& message) {
 			// Reset the time in main_Task
 
 			notifyMainTask(MAIN_TASK_ACTION_RESET_TIMER);
+
+			// Returns status of device, this firware version and if is a battery powered device
+
+			response = "01:";
+			response.append(FW_VERSION);
+			response.append(1u, ':');
+			response.append(haveBattery);
+			response.append(1u, ':');
+			response.append(sensorCharging);
+			
 		}
 		break; 
 	
-	case 2: // Firmware version
-		{
-			response = "02:";
-			response.append(FW_VERSION);
-		}
-		break; 
-	case 3: // Status of energy (battery or VUSB)
+#ifdef HAVE_BATTERY
+	case 10: // Status of energy: battery or external (USB or power supply)
 		{
 			sendEnergy = true;
-			response = "";
 		}
 		break; 
+#endif
 	
+	case 11: // Request of ESP32 informations
+		{
+			// Example of passing fields class to routine process
+
+			sendInfo(fields);
+
+		}
+		break;
+
 	// TODO: see it! Please put here custom messages
 
 	case 70: // Echo (for test purpose)
@@ -489,14 +586,16 @@ void processBleMessage (const string& message) {
 			// Message sent by the application periodically, for connection verification
 
 			logV("Feedback recebido");
+
+			// Response it (put here any information that needs)
+
+			response = "80:"; 
 		}
 		break; 
 
 	case 98: // Reinicialize the app
 		{
 			logI ("Reinitialize");
-
-			response = "";
 
 			// End code placed at the end of this routine to send OK before 
 		}
@@ -506,17 +605,17 @@ void processBleMessage (const string& message) {
 		{
 			logI ("Entering in standby");
 
-			response = "";
-
 			// End code placed at the end of this routine to send OK before 
 		}
 		break; 
 
 	default: 
-
-		error ("Type of message invalid"); 
-		return;
-
+		{
+			string errorMsg = "Code of message invalid: ";
+			errorMsg.append(mUtil.intToStr(code)); 
+			error (errorMsg.c_str()); 
+			return;
+		}
 	}
 
 	// return 
@@ -530,6 +629,7 @@ void processBleMessage (const string& message) {
 		} 
 	} 
 
+#ifdef HAVE_BATTERY
 	// Return energy situation too? 
 
 	if (sendEnergy) { 
@@ -537,6 +637,7 @@ void processBleMessage (const string& message) {
 		checkEnergyVoltage (true);
 
 	} 
+#endif
 
 	// Mark the mTimeSeconds of the receipt 
 
@@ -546,30 +647,37 @@ void processBleMessage (const string& message) {
 
 	switch (code) {
 
-	case 98: // Reinicialize the app
+	case 98: // Restart the Esp32
 
-		appInitialize (true);
+		// Wait 500 ms, to give mobile app time to quit 
+
+		if (mAppConnected) {
+			delay (500); 
+		}
+
+		restartESP32();
 		break; 
 
 	case 99: // Standby - enter in deep sleep
 
-#ifdef PIN_BUTTON_STANDBY
-
-		// Turn on the status LED 
+#ifdef HAVE_STANDBY
 
 		// Wait 500 ms, to give mobile app time to quit 
 
-		delay (500); 
+		if (mAppConnected) {
+			delay (500); 
+		}
 
-		// Off - enters standby 
-
-		standby ("99 code msg - standby");
+		// Soft Off - enter in standby by main task to not crash or hang on finalize BLE
+		// Notify main_Task to enter standby
+			
+		notifyMainTask(MAIN_TASK_ACTION_STANDBY_MSG);
 
 #else
 
-		// No have standby - reinitialize
+		// No have standby - restart
 
-		appInitialize(true);
+		restartESP32();
 
 #endif
 
@@ -579,22 +687,20 @@ void processBleMessage (const string& message) {
 
 } 
 
+#ifdef HAVE_BATTERY
 /**
  * @brief Check the voltage of the power supply (battery or charging via usb) 
- * Used also if this project not have battery, to mobile app know that)
  */
 static void checkEnergyVoltage (bool sendingStatus) {
 
 	string energy = "";
-
-#ifdef HAVE_BATTERY
 
 	static int16_t lastReadingVBAT = 0;
 
 	// Volts in the power supply (battery) of the ESP32 via the ADC pin 
 	// There is one resistive divider
 
-	uint16_t readVBAT = mSensorVBat; // Read in adc.cc
+	uint16_t readVBAT = mAdcBattery; // Read in adc.cc
 
 	// Send the status to the application 
 
@@ -605,30 +711,19 @@ static void checkEnergyVoltage (bool sendingStatus) {
 
 	if (bleConnected() &&										// Only if connected
 			(sendingStatus ||									// And sending status
-					(!mChargingVUSB && diffAnalog > 20))) {		// Or significative diff
+					(!mGpioVEXT && diffAnalog > 20))) {			// Or significative diff
 
 		logD("vbat=%u diff=%u", readVBAT, diffAnalog);
 
 		// Message to App
 
-		energy="03:";
-		energy.append ((mChargingVUSB)? "VUSB:": "BAT:");
+		energy="10:";
+		energy.append ((mGpioVEXT)? "EXT:": "BAT:");
+		energy.append ((mGpioChgBattery)? "Y:": "N:");
 		energy.append (mUtil.intToStr(readVBAT));
 		energy.append (1u, ':'); 
 
 	}
-
-#else // Without battery
-
-	if (bleConnected()) {
-
-		// Message to App
-
-		energy="03:VUSB:0:";
-
-	}
-
-#endif
 
 	// Send it to app ?
 
@@ -639,16 +734,14 @@ static void checkEnergyVoltage (bool sendingStatus) {
 
 	// Save last readings
 
-#ifdef HAVE_BATTERY
 	lastReadingVBAT = readVBAT;
-#endif
-
 } 
+#endif
 
 /**
  * @brief Standby - enter in deep sleep
  */
-static void standby (const char *cause) {
+static void standby (const char *cause, bool sendBLEMsg) {
 
 	// Enter in standby (standby off is reseting ESP32)
 	// Yet only support a button to control it, touchpad will too in future
@@ -663,13 +756,13 @@ static void standby (const char *cause) {
 
 	gpioDisableISR(PIN_BUTTON_STANDBY);
 
-	// Send message to app mobile
+	// Send message to app mobile ?
 
-	if (mAppConnected && bleConnected()) {
+	if (sendBLEMsg &&  mAppConnected && bleConnected()) {
 
 		// Send the cause of the standby 
 
-		string message = "44:";
+		string message = "99:";
 		message.append (cause); 
 
 		if (bleConnected ()) { 
@@ -679,7 +772,6 @@ static void standby (const char *cause) {
 			delay (500); 
 
 		} 
-
 	} 
 
 #ifdef PIN_GROUND_VBAT
@@ -690,6 +782,10 @@ static void standby (const char *cause) {
 #endif
 
 	////// Entering standby 
+
+	// Debug
+
+	logD ("Finalizing ...");
 
 	// Finalize BLE
 
@@ -741,7 +837,7 @@ void error (const char *message, bool fatal) {
 	if (bleConnected ()) { 
 		string error = "-1:"; // -1 is a code of error messages
 		error.append (message);
-		bleSendData(message);
+		bleSendData(error);
 	} 
 
 	// Fatal ?
@@ -774,6 +870,126 @@ void restartESP32 () {
 } 
 
 /**
+ * @brief Process informations request
+ */
+static void sendInfo(Fields& fields) {
+
+	// Note: the field 1 is a code of message
+
+	// Type 
+
+	string type = fields.getString(2);
+
+	logV("type=%s", type.c_str());
+
+	// Note: this is a example of send large message 
+
+	const uint16_t MAX_INFO = 300;
+	char info[MAX_INFO];
+
+	// Return response (can bem more than 1, delimited by \n)
+
+	string response = "";
+
+	if (type == "ESP32" || type == "ALL") { // Note: For this example string type, but can be numeric
+
+		// About the ESP32 // based on Kolban GeneralUtils
+		// With \r as line separator
+
+		esp_chip_info_t chipInfo;
+		esp_chip_info(&chipInfo);
+
+		const uint8_t* macAddr = bleMacAddress();
+
+		char deviceName[30] = BLE_DEVICE_NAME;
+
+		uint8_t size = strlen(deviceName);
+
+		if (size > 0 && deviceName[size-1] == '_') { // Put last 2 of mac address in the name
+
+			char aux[7];
+			sprintf(aux, "%02X%02X", macAddr[4], macAddr[5]);
+
+			strcat (deviceName, aux);
+		}
+
+#if !CONFIG_FREERTOS_UNICORE
+		const char* uniCore = "No"; 
+#else
+		const char* uniCore = "Yes"; 
+#endif
+
+		// Note: the \n is a message separator and : is a field separator
+		// Due this send # and ; (this will replaced in app mobile) 
+
+		snprintf(info, MAX_INFO, "11:ESP32:"\
+									"*** Chip Info#" \
+									"* Model; %d#" \
+									"* Revision; %d#" \
+									"* Cores; %d#" \
+									"* FreeRTOS unicore ?; %s#"
+									"* ESP-IDF;#  %s#" \
+									"*** BLE info#" \
+									"* Device name; %s#" \
+									"* Mac-address; %02X;%02X;%02X;%02X;%02X;%02X#" \
+									"\n", \
+									chipInfo.model, \
+									chipInfo.revision, \
+									chipInfo.cores, \
+									uniCore, 
+									esp_get_idf_version(), \
+									deviceName,
+									macAddr[0], macAddr[1], \
+									macAddr[2], macAddr[3], \
+									macAddr[4], macAddr[5] \
+									); 
+
+		response.append(info);
+	}
+
+	if (type == "FMEM" || type == "ALL") {
+
+		// Free memory of ESP32 
+		
+		snprintf(info, MAX_INFO, "11:FMEM:%u\n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
+		response.append(info);
+
+	}
+
+	if (type == "VDD33" || type == "ALL") {
+
+		// Voltage of ESP32 
+		
+		int read = rom_phy_get_vdd33();
+		logV("rom_phy_get_vdd33=%d", read);
+
+		snprintf(info, MAX_INFO, "11:VDD33:%d\n", read);
+
+		response.append(info);
+
+	}
+
+#ifdef HAVE_BATTERY
+
+	// VEXT and VBAT is update from energy message type
+
+	if (type == "VBAT" || type == "VEXT" || type == "ALL") {
+
+		checkEnergyVoltage (true);
+
+	} 
+#endif
+
+//	logV("response -> %s", response.c_str());
+
+	// Send
+
+	bleSendData(response);
+
+}
+
+/**
  * @brief Initial Debugging 
  */
 static void debugInitial () {
@@ -788,6 +1004,12 @@ static void debugInitial () {
  * @brief Cause an action on main_Task by task notification
  */
 void IRAM_ATTR notifyMainTask(uint32_t action, bool fromISR) {
+
+	// Main Task is alive ?
+
+	if (xTaskMainHandler == NULL) {
+		return;
+	}
 
 	// Debug (for non ISR only) 
 

@@ -61,24 +61,34 @@ using namespace std;
 #define TASK_STACK_MEDIUM 5120 
 #define TASK_STACK_SMALL 1024 
 
+// Features configurations // TODO: see it!
+
+//#define HAVE_STANDBY true           // This project have standby (deep sleep) ?
+
+//#define HAVE_BATTERY true		    // This project have a battery plugged ?
+
+// Timeouts
+
+#ifdef HAVE_STANDBY
+    #define MAX_TIME_INACTIVE 300    // Maximum inactive time to deep sleep (comment if want it disabled)
+#endif
+
+//#define MAX_TIME_WITHOUT_FB 120 // Maximum time without receive feedback messages comment if want it disabled)
+
 // Actions of main_Task - by task notifications
 
 #define MAIN_TASK_ACTION_NONE 			0	// No action
 #define MAIN_TASK_ACTION_RESET_TIMER 	1	// To reset the seconds timer (for example, after a app connection)
-#define MAIN_TASK_ACTION_STANDBY 		2	// To enter in deep sleep (to not do it in ISR)
+#define MAIN_TASK_ACTION_STANDBY_BTN 	2	// For button -> To enter in deep sleep (to not do it in ISR)
+#define MAIN_TASK_ACTION_STANDBY_MSG 	3	// For msg BLE -> To enter in deep sleep (to not do it in ISR)
 
-// Configurations // TODO: see it!
-
-//#define HAVE_BATTERY true		// This project have a Lipo Battery plugged ?
-
-#define MAX_TIME_INACTIVE   300 // Maximum inactive time to deep sleep (comment if want it disabled)
-//#define MAX_TIME_WITHOUT_FB 120 // Maximum time without receive feedback messages comment if want it disabled)
+#if HAVE_BATTERY
+#define MAIN_TASK_ACTION_SEN_VEXT    	4	// Indicate that value of sensor of external voltage (USB or power supply) is changed (to not do it in ISR)
+//#define MAIN_TASK_ACTION_SEN_CHGR   	5	// Indicate that value of sensor of battery charging is changed (to not do it in ISR)
+                                            // this notification not used more - this is done in main_Task
+#endif
 
 ////// Prototypes of main
-
-#ifdef ARDUINO // Only for Arduino
-extern void app_main();
-#endif
 
 extern void appInitialize(bool resetTimerSeconds);
 extern void notifyMainTask(uint32_t action, bool fromISR=false);
@@ -95,14 +105,6 @@ extern bool mLogActive;
 // Connection with App mobile started? (received message code 01) 
 
 extern bool mAppConnected;
-
-#ifdef HAVE_BATTERY
-// Charging by VUSB ?
-extern bool mChargingVUSB;
-
-// VBat
-extern int16_t mSensorVBat;
-#endif
  
 // Times
 

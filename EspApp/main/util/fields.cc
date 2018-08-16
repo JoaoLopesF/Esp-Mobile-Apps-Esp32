@@ -87,8 +87,8 @@ uint8_t Fields::size() {
 */
 string Fields::getString(uint8_t fieldNum) {
 
-	if (fieldNum < fields.size()) {
-		return fields[fieldNum];
+	if (fieldNum > 0 && fieldNum <= fields.size()) {
+		return fields[fieldNum - 1];
 	} else {
 		return "";
 	}
@@ -99,8 +99,8 @@ string Fields::getString(uint8_t fieldNum) {
 */
 char Fields::getChar(uint8_t fieldNum) {
 
-	if (fieldNum < fields.size()) {
-		return fields[fieldNum][0];
+	if (fieldNum > 0 && fieldNum <= fields.size()) {
+		return fields[fieldNum - 1][0];
 	} else {
 		return '\0';
 	}
@@ -112,8 +112,8 @@ char Fields::getChar(uint8_t fieldNum) {
 */
 bool Fields::isNum(uint8_t fieldNum) {
 
-	if (fieldNum < fields.size()) {
-		return Util.strIsNum(fields[fieldNum]);
+	if (fieldNum > 0 && fieldNum <= fields.size()) {
+		return Util.strIsNum(fields[fieldNum - 1]);
 	} else {
 		return false;
 	}
@@ -124,8 +124,8 @@ bool Fields::isNum(uint8_t fieldNum) {
 */
 int32_t Fields::getInt(uint8_t fieldNum) {
 
-	if (fieldNum < fields.size()) {
-		return Util.strToInt(fields[fieldNum]);
+	if (fieldNum > 0 && fieldNum <= fields.size()) {
+		return Util.strToInt(fields[fieldNum - 1]);
 	} else {
 		return 0;
 	}
@@ -137,8 +137,8 @@ int32_t Fields::getInt(uint8_t fieldNum) {
 */
 float Fields::getFloat(uint8_t fieldNum) {
 
-	if (fieldNum < fields.size()) {
-		return Util.strToFloat(fields[fieldNum]);
+	if (fieldNum > 0 && fieldNum <= fields.size()) {
+		return Util.strToFloat(fields[fieldNum - 1]);
 	} else {
 		return 0.0f;
 	}

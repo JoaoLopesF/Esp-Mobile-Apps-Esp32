@@ -65,6 +65,8 @@ class BleServer
 		void finalize();
 		bool connected();
 		void send(const char*);
+		void send(string&);
+		const uint8_t* getMacAddress();
 
 	private:
 

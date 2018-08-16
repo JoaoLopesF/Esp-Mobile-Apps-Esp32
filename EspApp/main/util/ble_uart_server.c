@@ -45,6 +45,7 @@ static esp_gatt_if_t mGatts_if = ESP_GATT_IF_NONE;					// To save gatts_if
 static bool mConnected = false;										// Connected ?
 static char mDeviceName[30];										// Device name
 static uint16_t mMTU = 20;											// MTU of BLE data
+static const uint8_t* mMacAddress;										// Mac address
 
 ////// Prototypes
 
@@ -750,6 +751,10 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 	};
 #endif
 
+	// Get the mac adress
+
+	mMacAddress = esp_bt_dev_get_address();
+
 	// Change the name with the last two of the mac address
 	// If name ends with '_'
 
@@ -757,10 +762,8 @@ esp_err_t ble_uart_server_Initialize (const char* device_name) {
 
 	if (size > 0 && mDeviceName[size-1] == '_') {
 
-		const uint8_t* macAddr = esp_bt_dev_get_address();
-
 		char aux[7];
-		sprintf(aux, "%02X%02X", macAddr[4], macAddr[5]);
+		sprintf(aux, "%02X%02X", mMacAddress[4], mMacAddress[5]);
 
 		strcat (mDeviceName, aux);
 	}
@@ -872,6 +875,15 @@ uint16_t ble_uart_server_MTU() {
 	// Returns the received MTU or default
 
 	return mMTU;
+
+}
+
+/**
+* @brief Get mac address of ESP32
+*/
+const uint8_t* ble_uart_server_MacAddress() {
+
+	return mMacAddress;
 
 }
 

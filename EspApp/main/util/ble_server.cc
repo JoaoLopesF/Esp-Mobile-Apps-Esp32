@@ -137,6 +137,8 @@ void BleServer::initialize(const char* deviceName, BleServerCallbacks* pBleServe
 */
 void BleServer::finalize() {
 
+	logI("Finalizing Ble server ...");
+
 #ifdef BLE_EVENTS_TASK_CPU // Task for events on CPU 1
 
 	if (xTaskEventsHandle != NULL) {
@@ -149,8 +151,10 @@ void BleServer::finalize() {
 #endif
 
 	// Finalize it
-
+	
 	ble_uart_server_Finalize();
+
+	logI("Finalized Ble server");
 
 }
 
@@ -164,18 +168,37 @@ bool BleServer::connected() {
 }
 
 /**
-* @brief Send data to APP (by BLE)
+* @brief Send data to App mobile (by BLE UART Server)
+* Note: char* wrapper
 */
 void BleServer::send(const char* data) {
+
+	string aux = data;
+	send(aux);
+}
+
+/**
+* @brief Send data to App mobile (by BLE UART Server)
+*/
+void BleServer::send(string& data) {
+
+	// Send data by UART BLE Server
 
 	if (!mConnected) {
 		logE("not connected");
 		return;
 	}
 
-	// Send data via UART BLE Server
+	// Process data
 
-	uint8_t size = strlen(data);
+	uint16_t size = data.size();
+
+	// Add new line, if not have it (need when split large messages)
+
+	if (data[size-1] != '\n') {
+		data.append(1u, '\n');
+		size++;
+	}
 
 	logV("BLE message [%d] -> %s", size, mUtil.strExpand(data).c_str());
 
@@ -193,9 +216,9 @@ void BleServer::send(const char* data) {
 
 	memset(send, 0, maximum + 1);
 
-	uint8_t posSend = 0;
-
-	for (uint8_t i = 0; i < size; i++) {
+	uint16_t posSend = 0;
+	
+	for (uint16_t i = 0; i < size; i++) {
 
 		send[posSend++] = data[i];
 
@@ -220,6 +243,12 @@ void BleServer::send(const char* data) {
 
 		}
 	}
+}
+
+const uint8_t* BleServer::getMacAddress() {
+
+	return ble_uart_server_MacAddress();
+
 }
 
 ///// Privates 

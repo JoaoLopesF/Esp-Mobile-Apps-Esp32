@@ -20,15 +20,17 @@ using namespace std;
 
 /////// Definitions
 
-#define BLE_DEVICE_NAME "Esp32_Example_"    // Device name //TODO: see it!
-                                            // Tip: is it ends with _, 
-                                            // last two of the mac address is appended to name
+#define BLE_DEVICE_NAME "Esp32_Device_" // Device name //TODO: see it!
+                                        // Tip: is it ends with _, 
+                                        // last two of the mac address is appended to name
 ////// Prototypes
 
 extern void bleInitialize();
 extern void bleFinalize();
-extern void bleSendData(string data);
+extern void bleSendData(const char* data);
+extern void bleSendData(string& data);
 extern bool bleConnected();
+extern const uint8_t* bleMacAddress();
 
 #endif /* MAIN_BLE_H_ */
 

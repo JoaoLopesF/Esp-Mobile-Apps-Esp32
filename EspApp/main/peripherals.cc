@@ -25,6 +25,7 @@
 // Utilities
 
 #include "util/log.h"
+#include "util/esp_util.h"
 
 #ifdef MEDIAN_FILTER_READINGS
 	#include "util/median_filter.h"
@@ -36,16 +37,24 @@
 
 static const char* TAG = "peripherals";
 
-#ifdef PIN_LED_ESP32
-// Led Esp32 on?
+#ifdef PIN_LED_STATUS
+// Led status on?
 
-static bool mLedEsp32On = false; 
+static bool mLedStatusOn = false; 
 #endif
 
 // ADC reading average
 
 #ifdef MEDIAN_FILTER_READINGS
 static MedianFilter <uint16_t, MEDIAN_FILTER_READINGS> Filter;
+#endif
+
+/// Sensors
+
+#ifdef HAVE_BATTERY
+bool mGpioVEXT = false;			// Powered by external voltage (USB or power supply)
+bool mGpioChgBattery = false;	// Charging battery ?
+int16_t mAdcBattery = 0;		// voltage of battery readed by ADC
 #endif
 
 /////// Prototype - Private
@@ -134,6 +143,79 @@ static void gpioInitialize() {
 	gpio_config(&config);
 #endif
 
+#ifdef PIN_SENSOR_VEXT
+
+    // Digital sensor - VEXT - detects an external voltage (USB or power supply)
+
+	config.pin_bit_mask = (1<<PIN_SENSOR_VEXT);
+	config.mode         = GPIO_MODE_INPUT;
+	config.pull_up_en   = GPIO_PULLUP_DISABLE;
+	config.pull_down_en = GPIO_PULLDOWN_ENABLE;
+	config.intr_type    = GPIO_INTR_ANYEDGE;// Any edge: low -> high or high -> low
+
+	gpio_config(&config);
+
+	// Energy by USB (or external source)? (first reading, after this, is done via ISR)
+
+	mGpioVEXT = gpioIsHigh (PIN_SENSOR_VEXT);
+
+#endif
+
+#ifdef PIN_SENSOR_CHARGING
+
+    // Digital sensor - detect if is charging the battery
+
+	config.pin_bit_mask = (1<<PIN_SENSOR_CHARGING);
+	config.mode         = GPIO_MODE_INPUT;
+	config.pull_up_en   = GPIO_PULLUP_DISABLE;
+	config.pull_down_en = GPIO_PULLDOWN_ENABLE;
+	config.intr_type    = GPIO_INTR_ANYEDGE;// Any edge: low -> high or high -> low
+
+	gpio_config(&config);
+
+	// Charging now? (first reading, after this, is done via ISR)
+
+	mGpioChgBattery = gpioIsLow (PIN_SENSOR_CHARGING);
+
+#endif
+
+#ifdef INSTALL_ISR_SERVICE
+
+	// ISR
+
+	gpio_install_isr_service(0);
+
+	#ifdef PIN_BUTTON_STANDBY
+		gpio_isr_handler_add (PIN_BUTTON_STANDBY, gpio_isr_handler, (void *) PIN_BUTTON_STANDBY);
+	#endif
+	#ifdef PIN_SENSOR_VEXT
+		gpio_isr_handler_add(PIN_SENSOR_VEXT, gpio_isr_handler, (void*) PIN_SENSOR_VEXT);
+	#endif
+	#ifdef PIN_SENSOR_CHARGING
+		gpio_isr_handler_add(PIN_SENSOR_CHARGING, gpio_isr_handler, (void*) PIN_SENSOR_CHARGING);
+	#endif
+
+#endif
+
+    //// Output pins
+
+#ifdef PIN_LED_STATUS
+
+    // Led of status (can be a board led of ESP32 or external)
+
+	config.pin_bit_mask = (1<<PIN_LED_STATUS);
+	config.mode         = GPIO_MODE_OUTPUT;
+	config.pull_up_en   = GPIO_PULLUP_DISABLE;
+	config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+	config.intr_type = GPIO_INTR_DISABLE;
+
+	gpio_config(&config);
+
+	gpio_set_level(PIN_LED_STATUS, 1);
+	mLedStatusOn = true;
+
+#endif
+
 #ifdef PIN_GROUND_VBAT
 
 	// Pin to ground resistor divider to measure voltage of battery
@@ -148,58 +230,7 @@ static void gpioInitialize() {
 
 	gpio_config(&config);
 
-	gpioSetLevel (PIN_GROUND_VBAT, 1); // Not ground this - is only do in ADC readings
-#endif
-
-#ifdef PIN_SENSOR_VUSB
-
-    // Digital sensor - VUSB - detects 5V
-
-	config.pin_bit_mask = (1<<PIN_SENSOR_VUSB);
-	config.mode         = GPIO_MODE_INPUT;
-	config.pull_up_en   = GPIO_PULLUP_DISABLE;
-	config.pull_down_en = GPIO_PULLDOWN_ENABLE;
-	config.intr_type    = GPIO_INTR_ANYEDGE;// Any edge: low -> high or high -> low
-
-	gpio_config(&config);
-
-	// Charging via USB? (first reading, after this, is done via ISR)
-
-	mChargingVUSB = gpioIsHigh (PIN_SENSOR_VUSB);
-
-#endif
-
-#ifdef INSTALL_ISR_SERVICE
-
-	// ISR
-
-	gpio_install_isr_service(0);
-
-	#ifdef PIN_BUTTON_STANDBY
-		gpio_isr_handler_add (PIN_BUTTON_STANDBY, gpio_isr_handler, (void *) PIN_BUTTON_STANDBY);
-	#endif
-	#ifdef PIN_SENSOR_VUSB
-		gpio_isr_handler_add(PIN_SENSOR_VUSB, gpio_isr_handler, (void*) PIN_SENSOR_VUSB);
-	#endif
-
-#endif
-
-    //// Output pins
-
-#ifdef PIN_LED_ESP32
-
-    // Led do ESP32
-
-	config.pin_bit_mask = (1<<PIN_LED_ESP32);
-	config.mode         = GPIO_MODE_OUTPUT;
-	config.pull_up_en   = GPIO_PULLUP_DISABLE;
-	config.pull_down_en = GPIO_PULLDOWN_DISABLE;
-	config.intr_type = GPIO_INTR_DISABLE;
-
-	gpio_config(&config);
-
-	gpio_set_level(PIN_LED_ESP32, 1);
-	mLedEsp32On = true;
+	gpioSetLevel (PIN_GROUND_VBAT, GPIO_LEVEL_READ_VBAT_OFF); // Not ground this, is only do in ADC readings
 
 #endif
 
@@ -218,28 +249,28 @@ static void gpioFinalize () {
 
 	logD ("GPIO finalizing ...");
 
-#ifdef PIN_LED_ESP32
+#ifdef PIN_LED_STATUS
 
-	// Turn off the Esp32 led
+	// Turn off the led of status
 
-	gpioSetLevel(PIN_LED_ESP32, 0);
+	gpioSetLevel(PIN_LED_STATUS, 0);
 
-	mLedEsp32On = false;
+	mLedStatusOn = false;
 #endif
 
 #ifdef INSTALL_ISR_SERVICE
 	// Disable ISRs
 
 	#ifdef PIN_BUTTON_STANDBY
-
 	gpioDisableISR (PIN_BUTTON_STANDBY);
-
 	#endif
 
-	#ifdef PIN_SENSOR_VUSB
+	#ifdef PIN_SENSOR_VEXT
+	gpioDisableISR (PIN_SENSOR_VEXT);
+	#endif
 
-	gpioDisableISR (PIN_SENSOR_VUSB);
-
+	#ifdef PIN_SENSOR_CHARGING
+	gpioDisableISR (PIN_SENSOR_CHARGING);
 	#endif
 
 #endif
@@ -250,15 +281,15 @@ static void gpioFinalize () {
 
 }
 
-#ifdef PIN_LED_ESP32
+#ifdef PIN_LED_STATUS
 /**
- * @brief Blink the board led
+ * @brief Blink the status led
  */
-void gpioBlinkLedEsp32() {
+void gpioBlinkLedStatus() {
 
-	mLedEsp32On = !mLedEsp32On;
+	mLedStatusOn = !mLedStatusOn;
 
-	gpioSetLevel(PIN_LED_ESP32, mLedEsp32On);
+	gpioSetLevel(PIN_LED_STATUS, mLedStatusOn);
 
 }
 
@@ -273,33 +304,95 @@ void gpioBlinkLedEsp32() {
  */
 static void IRAM_ATTR gpio_isr_handler (void * arg) {
 
-	uint32_t gpio_num = (uint32_t) arg;
+	uint32_t gpioNum = (uint32_t) arg;
+
+	// Debounce events 
+
+	static uint32_t lastTime = 0;		// Last event time
+	static uint32_t lastGpioNum = 0; 	// Last GPIO 
+
+	bool ignore = false;				// Ignore event ?
 
 	// Treat gpio
 
-	switch (gpio_num) {
+	switch (gpioNum) {
 
 #ifdef PIN_BUTTON_STANDBY
 		case PIN_BUTTON_STANDBY: // Standby?
 
-			// Notify main_Task to enter standby - to not do it in ISR
-			
-			notifyMainTask(MAIN_TASK_ACTION_STANDBY, true);
+			// Debounce
+
+			if (lastGpioNum == PIN_BUTTON_STANDBY && lastTime > 0) {
+
+				if ((millis() - lastTime) < 50) {
+					ignore=true;
+				}
+
+			}
+
+			if (!ignore) {
+
+				// Notify main_Task to enter standby - to not do it in ISR
+				
+				notifyMainTask(MAIN_TASK_ACTION_STANDBY_BTN, true);
+			}
 			break;
 #endif
-#ifdef PIN_SENSOR_VUSB
-		case PIN_SENSOR_VUSB: // Charging by VUSB
 
-			// Charging by VUSB? (variable from main.cc)
+#ifdef PIN_SENSOR_VEXT
+		case PIN_SENSOR_VEXT: // Powered by external voltage (USB or power supply)
 
-			mChargingVUSB = gpioIsHigh(PIN_SENSOR_VUSB);
+			// Not need debounce
 
+			// Powered by VEXT? 
+
+			mGpioVEXT = gpioIsHigh(PIN_SENSOR_VEXT);
+
+			// Notify main_Task that powered by VEXT is changed - to not do it in ISR
+			
+			notifyMainTask(MAIN_TASK_ACTION_SEN_VEXT, true);
+
+			break;
+#endif
+
+#ifdef PIN_SENSOR_CHARGING
+		case PIN_SENSOR_CHARGING: // Charging battery
+
+			// Without debounce - due not notification used more - this is done in main_Task
+			//                    (due if no battery plugged, the notification not ok)
+			// // Debounce - it is important, due if no battery plugged, the value change fast
+
+			// if (lastGpioNum == PIN_SENSOR_CHARGING && lastTime > 0) {
+
+			// 	if ((millis() - lastTime) < 50) {
+			// 		ignore=true;
+			// 	}
+
+			// }
+
+			// Charging now ? 
+
+			mGpioChgBattery = gpioIsLow(PIN_SENSOR_CHARGING);
+
+			// No notification 
+			// if (!ignore) {
+			// 
+			// 	// Notify main_Task that charging is changed - to not do it in ISR
+			//	
+			// 	notifyMainTask(MAIN_TASK_ACTION_SEN_CHGR, true);
+			// }
 			break;
 #endif
 		default:
 			break;
 	}
+
+	// Save this
+
+	lastTime = millis();
+	lastGpioNum = gpioNum;
 }
+
 #endif
 
 /////// Routines for ADC
@@ -335,33 +428,27 @@ void adcRead() {
 
 	// Read sensors
 
-#ifdef ADC_SENSOR_VBAT 
+#if defined HAVE_BATTERY && defined ADC_SENSOR_VBAT 
 
 	// VBAT voltage
-
-	if (mChargingVUSB) {
-
-		mSensorVBat = 0; // Not trust in readings on charging
-
-	} else { 
 		
-#ifdef PIN_GROUND_VBAT
+	#ifdef PIN_GROUND_VBAT
 
 		// Pin to ground resistor divider to measure voltage of battery
 		// To turn ground only when reading ADC 
 
-		gpioSetLevel (PIN_GROUND_VBAT, 0); // Ground this 
+		gpioSetLevel (PIN_GROUND_VBAT, GPIO_LEVEL_READ_VBAT_ON); // Ground this 
 
-#endif
+	#endif
 
-		// Read ADC
+	// Read ADC
 
-		mSensorVBat = adcReadMedian (ADC_SENSOR_VBAT);
+	mAdcBattery = adcReadMedian (ADC_SENSOR_VBAT);
 
-#ifdef PIN_GROUND_VBAT
-		gpioSetLevel (PIN_GROUND_VBAT, 1); // Not ground this - no consupmition of battery 
-#endif
-	}
+	#ifdef PIN_GROUND_VBAT
+		gpioSetLevel (PIN_GROUND_VBAT, GPIO_LEVEL_READ_VBAT_OFF); // Not ground this - no consupmition of battery 
+	#endif
+	
 #endif
 
 }
