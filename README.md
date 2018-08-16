@@ -8,6 +8,8 @@ for those who need to make ble connected mobile projects with the ESP32.
 * Part II   - __iOS app__ - mobile app example          - https://github.com/JoaoLopesF/Esp-Idf-Mobile-App-iOS
 * Part III  - __Android app__ - mobile app example      - soon, prevision -> 30-Aug-2018
 
+It is a advanced, but simple (ready to go), fully functional set of applications
+
 ## Esp32
 
 The Esp32 is a powerful board with 2 cores, 520K RAM, 34 GPIO, 3 UART,
