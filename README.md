@@ -139,22 +139,24 @@ But yes in the other files, to facilitate, I put a comment "// TODO: see it" in 
 
 Is a same for any project with Esp32:
 
-    - A development kit board with Esp32. 
-        Can be ESP-WROVER-KIT, ESP32-Pico-Kit, DevKitC, Lolin32, etc.
-        Can be a custom hardware too, with any Esp32 module.
 
-    - USB driver of this board installed
+* A development kit board with Esp32. 
+
+    - Can be ESP-WROVER-KIT, ESP32-Pico-Kit, DevKitC, Lolin32, etc.
+    - Or a custom hardware too, with any Esp32 module.
+
+* USB driver of this board installed
     
-    - Latest esp-idf SDK installed (https://github.com/espressif/esp-idf)
+* Latest esp-idf SDK installed (https://github.com/espressif/esp-idf)
     
-    - An configured C/C++ IDE (recommended). 
+* An configured C/C++ IDE (recommended). 
         
-        I suggest Eclipse CDT or VSCode:
+    I suggest Eclipse CDT or VSCode:
 
-            - Eclipse CDT: powerfull but high memory
-            - VSCode: rich and lightweight, but refactoring is poor than eclipse
+    - Eclipse CDT: powerfull but high memory
+    - VSCode: rich and lightweight, but refactoring is poor than eclipse
 
-        I use both, just editing code I use VSCode, if I need more, as better refactoring, I use Eclipse
+    I use both, just editing code I use VSCode, if I need more, as better refactoring, I use Eclipse
 
 ## Schematics 
 
