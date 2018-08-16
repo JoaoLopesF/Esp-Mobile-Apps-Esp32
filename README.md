@@ -10,6 +10,22 @@ for those who need to make ble connected mobile projects with the ESP32.
 
 It is a advanced, but simple (ready to go), fully functional set of applications
 
+## Contents
+
+ - [Esp32](#esp32)
+ - [BLE](#ble)
+ - [Part I - ESP-IDF app](#part-i---esp-idf-app)
+ - [Features](#features)
+ - [BLE messages](#ble-messages)
+ - [Structure](#structure)
+ - [Prerequisites](#prerequisites)
+ - [Schematics](#schematics)
+ - [Install](#install)
+ - [For Arduino developers](#for-arduino-developers)
+ - [Researchs used](#researchs-used)
+ - [To-do](#to-do)
+ - [Release History](#eelease-history)
+
 ## Esp32
 
 The Esp32 is a powerful board with 2 cores, 520K RAM, 34 GPIO, 3 UART,
@@ -37,9 +53,9 @@ But still have work to do with the BLE of ESP32:
     Consumption is still more than 10x of competitors.
     Espressif is working on this, and in future Esp-Idf versions we will have low power in BLE (modem-sleep).
 
-# Part I - Esp-IDF app example
+# Part I - ESP-IDF app
 
-This example app for ESP32 is for latest esp-idf SDK. 
+This app for ESP32 is for latest ESP-IDF SDK. 
 And is entirely made in C++,
 with the exception of the C code for the BLE connection, based on the pcbreflux code (https://github.com/pcbreflux/espressif).
 
@@ -99,9 +115,9 @@ Example:
     **/
 
 If your project needs to send much data,
-I recommend changing the codes to send binary messages.
+I recommend changing to send binary messages.
 
-This project is for a few messages per second.
+This project is for a few messages per second (less than 20).
 It is more a mobile app limit (more to Android).
 
 If your project need send more, 
@@ -141,7 +157,6 @@ But yes in the other files, to facilitate, I put a comment "// TODO: see it" in 
 
 Is a same for any project with Esp32:
 
-
 * A development kit board with Esp32. 
 
     - Can be ESP-WROVER-KIT, ESP32-Pico-Kit, DevKitC, Lolin32, etc.
@@ -150,7 +165,8 @@ Is a same for any project with Esp32:
 * USB driver of this board installed
     
 * Latest esp-idf SDK installed (https://github.com/espressif/esp-idf)
-    
+  See info in https://esp-idf.readthedocs.io/en/latest/get-started/index.html#get-started-get-esp-idf  
+
 * An configured C/C++ IDE (recommended). 
         
     I suggest Eclipse CDT or VSCode:
@@ -162,7 +178,7 @@ Is a same for any project with Esp32:
 
 ## Schematics 
 
-Need to standby or battery powered device)
+Need to standby or battery powered device.
 
 Note: this is disabled by default
 If your project need this, please:
@@ -172,6 +188,7 @@ If your project need this, please:
     - See notes
     - Enable features (GPIO pin can be changed)
     - For battery powered, I suggest modify ESP32 CPU freq. to 80 MHz (make config)
+    - The charging sensor is experimental and only tested on TP4054 charging chip 
 
 Schematics:
 
@@ -203,7 +220,7 @@ Feedbacks and contributions is allways well come
 
 Please give a star to this repo, if you like this.
 
-## TODO
+## To-do
 
 * Documentation (doxygen)
 * Tutorial (guide)
@@ -212,14 +229,12 @@ Please give a star to this repo, if you like this.
 
 ## Researchs used 
 
-* ESP-IDF documentation and examples
+* ESP-IDF documentation (https://esp-idf.readthedocs.io/en/latest/) and examples
 * Esp32 forum (https://www.esp32.com)
 * ESP32 Book and esp32-snippets by Neil Kolban
 
-## Thanks
-
-* @pcbreflux, for good __ble_uart_server__ example code, that works very well
-  with mobile apps
+* __ble_uart_server__ example code. 
+ Thanks a lot @pcbreflux, it works very well with mobile apps
     
 ## Release History
 
