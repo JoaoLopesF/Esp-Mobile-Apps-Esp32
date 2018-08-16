@@ -4,15 +4,9 @@
 I have prepared a set of applications, to serve as a basis,
 for those who need to make ble connected mobile projects with the ESP32.
 
-    - Part I    - Esp-IDF app - Esp32 firmware example  - this github repo
-    - Part II   - iOS app - mobile app example          - https://github.com/JoaoLopesF/Esp-Idf-Mobile-App-iOS
-    - Part III  - Android app - mobile app example      - soon, prevision -> 30-Aug-2018
-
-So far, for anyone who ventures to make mobile applications (Android and iOS),
-with the ESP32, there was not yet, something ready for the beginning of the development.
-Ready I say, sample apps working with BLE for ESP32, Android and iOS.
-
-For this I made this.
+* Part I    - __Esp-IDF app__ - Esp32 firmware example  - this github repo
+* Part II   - __iOS app__ - mobile app example          - https://github.com/JoaoLopesF/Esp-Idf-Mobile-App-iOS
+* Part III  - __Android app__ - mobile app example      - soon, prevision -> 30-Aug-2018
 
 ## Esp32
 
@@ -37,11 +31,9 @@ BLE is a Bluetooth Low Energy:
 
 But still have work to do with the BLE of ESP32:
 
-    - Espressif still do not have a mobile app samples for the ESP32.
-    - A we still do not have yet the "Low Energy" of the BLE (Bluetooth Low Energy) :-(
-    
+    A we still do not have yet the "Low Energy" of the BLE (Bluetooth Low Energy) :-(
     Consumption is still more than 10x of competitors.
-    Espressif is working on this, and in future Esp-Idf versions we will have this working.
+    Espressif is working on this, and in future Esp-Idf versions we will have low power in BLE (modem-sleep).
 
 # Part I - Esp-IDF app example
 
@@ -55,13 +47,14 @@ Please access the www.esp32.com forum to more information about the Esp32 and ES
 
 This app example to Esp32, have advanced features like:
 
-    - Implements a BLE GATT Server of type UART to receive and send messages
+    - Implements a BLE GATT Server of type UART RX/TX to receive and send messages
 
     - Support for large BLE messages (it is done in C++ code)
       (if necessary, automatically send / receive in small pieces)
 
     - Automatic adjust of MTU (BLE package size)
-       (the mobile app, if it is possible, change it to 185 - can be up to 517)
+      (the EspApp - mobile app, if it is possible, change it to 185 - can be up to 517)
+      (For iOS, 185 is default, but not for Android) 
       (the default size of ESP-IDF is only about 20)
 
     - Modular and advanced programming
@@ -70,6 +63,7 @@ This app example to Esp32, have advanced features like:
 
     - Stand-by support with ESP32 deep-sleep (essential to battery powered devices)
       (by a button, or by inativity time, no touchpad yet)
+
     - Support for battery powered devices
       (mobile app gets status of this)
       (3 GPIO for this: external voltage, charging status and VBAT ADC voltage)
@@ -122,7 +116,7 @@ Modules of esp-idf example aplication
             
             - util                  - utilities 
                 - ble_server.*      - ble server C++ wrapper class to ble_uart_server (in C)
-                - ble_uart_server.* - code in C, based on pcbreflux code
+                - ble_uart_server.* - code in C, based on @pcbreflux code
                 - esp_util.*        - general utilities
                 - fields.*          - class to split text delimited in fields
                 - log.h             - macros to improve esp-idf logging
@@ -187,7 +181,7 @@ To install, just download or use the "Github desktop new" app to do it (is good 
 
 After open it in your IDE
 
-Please find all _"TODO: see it"_ occorences
+Please find all __"TODO: see it"__ occorences in all files, it needs your attention
 
 And enjoy :-)
 
@@ -212,6 +206,17 @@ Please give a star to this repo, if you like this.
 * Arduino version
 * Revision of translate to english (typing errors or mistranslated)
 
+## Researchs used 
+
+* ESP-IDF documentation and examples
+* Esp32 forum (https://www.esp32.com)
+* ESP32 Book and esp32-snippets by Neil Kolban
+
+## Thanks
+
+* @pcbreflux, for good __ble_uart_server__ example code, that works very well
+  with mobile apps
+    
 ## Release History
 
 * 0.1.0
