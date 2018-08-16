@@ -5,9 +5,9 @@
 ### Preconfigured settings to VSCode (experimental - not full tested)
 
     Edit the files in .vscode directory:
-        Replace _[PUT HERE THE PATH]_ to your path
+        Replace [PUT HERE THE PATH] to your path
 
-    Just copy the _.vscode_ to parent directory
+    Just copy the .vscode to parent directory
 
     Execute VSCode and enjoy
 
