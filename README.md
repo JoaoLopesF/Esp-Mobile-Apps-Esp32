@@ -78,8 +78,9 @@ This app example to Esp32, have advanced features like:
       (the default size of ESP-IDF is only about 20)
 
     - Modular and advanced programming
-    - Based in mature code (I have ESP32 and mobile apps, since years ago)
-    - Multicore optimization (if have 2 cores enabled)
+    - Based in mature code (I have used in Bluetooth devices and mobile apps, since years ago)
+    
+    - ESP32 Multicore optimization (if have 2 cores enabled)
 
     - Stand-by support with ESP32 deep-sleep (essential to battery powered devices)
       (by a button, or by inativity time, no touchpad yet)
