@@ -39,15 +39,17 @@ using std::string;
 
 #if !CONFIG_FREERTOS_UNICORE
 	
-	// Task
+	// Task - comment it if not need callbacks on CPU1
 
 	#define BLE_EVENTS_TASK_CPU 1
 	#define BLE_EVENTS_TASK_PRIOR 5
 
 	// Events (notifications)
 
-	#define BLE_EVENT_CONNECTION 	1
-	#define BLE_EVENT_RECEIVE 		2
+	#ifdef BLE_EVENTS_TASK_CPU
+		#define BLE_EVENT_CONNECTION 	1
+		#define BLE_EVENT_RECEIVE 		2	
+	#endif
 #endif
 
 ////// Classes

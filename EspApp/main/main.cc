@@ -5,6 +5,7 @@
  * Versions  :
  * ------- 	-------- 	------------------------- 
  * 0.1.0 	01/08/18 	First version 
+ * 0.1.1	20/08/18	BLE task for event can be disabled now
  **/
 
 /**
