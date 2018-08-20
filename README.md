@@ -241,5 +241,8 @@ Please give a star to this repo, if you like this.
     
 ## Release History
 
+* 0.2.0 - 20/08/18
+    * Option to disable logging br BLE (used during repeated sends)
+    
 * 0.1.0
     * First version
