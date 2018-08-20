@@ -6,6 +6,7 @@
  * ------- 	-------- 	------------------------- 
  * 0.1.0 	01/08/18 	First version 
  * 0.1.1	20/08/18	BLE task for event can be disabled now
+ * 0.2.0	20/08/18	Option to disable logging br BLE (used during repeated sends)
  **/
 
 /**
@@ -20,6 +21,7 @@
  * 11 Informations about ESP32 device
  * 70 Echo debug
  * 80 Feedback
+ * 81 Logging (to activate or not)
  * 98 Restart (reset the ESP32)
  * 99 Standby (enter in deep sleep)
  *
@@ -104,6 +106,7 @@ uint32_t mLastTimeReceivedData = 0; // time of receipt of last line via
 // Log active (debugging)? 
 
 bool mLogActive = false;
+bool mLogActiveSaved = false;
 
 // Connected? 
 
@@ -595,6 +598,35 @@ void processBleMessage (const string& message) {
 			// Response it (put here any information that needs)
 
 			response = "80:"; 
+		}
+		break; 
+
+	case 81: // Logging - activate or desactivate debug logging - save state to use after
+		{
+			switch (fields.getChar(2)) // Process options
+			{
+				case 'Y': // Yes
+
+					mLogActiveSaved = mLogActive; // Save state
+					mLogActive = true; // Activate it
+
+					logV("Logging activated now");
+					break;
+
+				case 'N': // No
+
+					logV("Logging deactivated now");
+
+					mLogActiveSaved = mLogActive; // Save state
+					mLogActive = false; // Deactivate it
+					break;
+
+				case 'R': // Restore
+
+					mLogActive = mLogActiveSaved; // Restore state
+					logV("Logging state restored now");
+					break;
+			}
 		}
 		break; 
 
