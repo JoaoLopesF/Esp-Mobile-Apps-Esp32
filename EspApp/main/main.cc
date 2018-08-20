@@ -20,8 +20,8 @@
  * 10 Energy status(External or Battery?)
  * 11 Informations about ESP32 device
  * 70 Echo debug
+ * 71 Logging (to activate or not)
  * 80 Feedback
- * 81 Logging (to activate or not)
  * 98 Restart (reset the ESP32)
  * 99 Standby (enter in deep sleep)
  *
@@ -589,19 +589,7 @@ void processBleMessage (const string& message) {
 		}
 		break; 
 
-	case 80: // Feedback 
-		{
-			// Message sent by the application periodically, for connection verification
-
-			logV("Feedback recebido");
-
-			// Response it (put here any information that needs)
-
-			response = "80:"; 
-		}
-		break; 
-
-	case 81: // Logging - activate or desactivate debug logging - save state to use after
+	case 71: // Logging - activate or desactivate debug logging - save state to use after
 		{
 			switch (fields.getChar(2)) // Process options
 			{
@@ -627,6 +615,18 @@ void processBleMessage (const string& message) {
 					logV("Logging state restored now");
 					break;
 			}
+		}
+		break; 
+
+	case 80: // Feedback 
+		{
+			// Message sent by the application periodically, for connection verification
+
+			logV("Feedback recebido");
+
+			// Response it (put here any information that needs)
+
+			response = "80:"; 
 		}
 		break; 
 
