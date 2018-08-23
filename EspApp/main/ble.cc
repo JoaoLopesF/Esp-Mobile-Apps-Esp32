@@ -95,7 +95,7 @@ class MyBleServerCallbacks: public BleServerCallbacks {
 
 		// Received data via BLE server - by callback
 
-		// logV("BLE recv :%s", Util.strExpand(aux).c_str());
+		//logV("BLE recv: [%u] %s", strlen(message), message);
 
 		// Process the message (main.cc)
 

@@ -63,9 +63,9 @@ using namespace std;
 
 // Features configurations // TODO: see it!
 
-//#define HAVE_STANDBY true           // This project have standby (deep sleep) ?
+// #define HAVE_STANDBY true           // This project have standby (deep sleep) ?
 
-//#define HAVE_BATTERY true		    // This project have a battery plugged ?
+// #define HAVE_BATTERY true		    // This project have a battery plugged ?
 
 // Timeouts
 

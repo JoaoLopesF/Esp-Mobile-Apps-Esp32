@@ -33,14 +33,14 @@ extern "C" {
 
 // Log macros - this is to reduce number of logging
 
-// #define BLE_DEBUG true	// Show debug logging ? (comment to disable)
-							// Only if necessary debug ESP-IDF BT/BLE stuff
+//#define BLE_DEBUG true		// Show debug logging ? (comment to disable)
+								// Only if necessary debug ESP-IDF BT/BLE stuff
 #ifndef BLE_DEBUG
-// Without logging output 
-#define ble_logD(fmt, ...)
+	// Without logging output 
+	#define ble_logD(fmt, ...)
 #else
-// With logging output
-//#define ble_logD(fmt, ...) logD(fmt, ##__VA_ARGS__)
+	// With logging output
+	#define ble_logD(fmt, ...) logD(fmt, ##__VA_ARGS__)
 #endif
 
 // Log of errors
@@ -54,8 +54,8 @@ void ble_uart_server_SetCallbackConnection(void (*callbackConnection)(),
 		void (*callbackMTU)());
 bool ble_uart_server_ClientConnected();
 void ble_uart_server_SetCallbackReceiveData(
-		void (*callbackReceived)(char* data, uint8_t size));
-esp_err_t ble_uart_server_SendData(const char* data, uint8_t size);
+		void (*callbackReceived)(char* data, uint16_t size));
+esp_err_t ble_uart_server_SendData(const char* data, uint16_t size);
 uint16_t ble_uart_server_MTU();
 const uint8_t* ble_uart_server_MacAddress();
 

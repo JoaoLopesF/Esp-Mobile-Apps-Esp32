@@ -7,6 +7,10 @@
  * 0.1.0 	01/08/18 	First version 
  * 0.1.1	20/08/18	BLE task for event can be disabled now
  * 0.2.0	20/08/18	Option to disable logging br BLE (used during repeated sends)
+ * 0.3.0	23/08/18	Adjustments to allow sizes of BLE > 255
+ * 						BLE has a queue now to receive data
+ * 						Need when have more 1 message, to avoid empty string on event
+ * 						Changed name of github repos to Esp-App-Mobile-Apps
  **/
 
 /**

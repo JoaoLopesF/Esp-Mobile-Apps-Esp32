@@ -6,6 +6,7 @@
  * Versions  :
  * ------- 	-------- 	-------------------------
  * 0.1.0 	01/08/18 	First version
+ * 0.3.0  	23/08/18	Adjustments to allow sizes of BLE > 255
  */
 
 #include <stdio.h>
@@ -39,7 +40,7 @@ static const char* TAG = "ble_uart_server";							// Log tag
 
 static void (*mCallbackConnection)();								// Callback for connection/disconnection
 static void (*mCallbackMTU)();										// Callback for MTU change detect
-static void (*mCallbackReceivedData) (char *data, uint8_t size); 	// Callback for receive data
+static void (*mCallbackReceivedData) (char *data, uint16_t size); 	// Callback for receive data
 static esp_gatt_if_t mGatts_if = ESP_GATT_IF_NONE;					// To save gatts_if
 
 static bool mConnected = false;										// Connected ?
@@ -815,7 +816,7 @@ void ble_uart_server_SetCallbackConnection(void (*callbackConnection)(), void (*
 /**
 * @brief Set callback to receiving data
 */
-void ble_uart_server_SetCallbackReceiveData(void (*callbackReceived) (char* data, uint8_t size)) {
+void ble_uart_server_SetCallbackReceiveData(void (*callbackReceived) (char* data, uint16_t size)) {
 
 	// Arrow callback to receive data
 
@@ -835,7 +836,7 @@ bool ble_uart_server_ClientConnected () {
 /**
 * @brief Send data to client (mobile App)
 */
-esp_err_t ble_uart_server_SendData(const char* data, uint8_t size) {
+esp_err_t ble_uart_server_SendData(const char* data, uint16_t size) {
 
 	ble_logD ("data [%d] : %s", size, data);
 
