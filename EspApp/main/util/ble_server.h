@@ -31,7 +31,7 @@ using std::string;
 // Maximum size of line (larger, due message joined in any parts)
 // TODO: see it - change if you need
 
-#define BLE_LINE_MAX_SIZE (BLE_MSG_MAX_SIZE * 5)
+#define BLE_LINE_MAX_SIZE 1024
 
 // Timeout of receive line, need to control the join of splited messages (in millis)
 
@@ -53,11 +53,11 @@ using std::string;
 
 		// Event (notifications) (for now only connection)
 
-		#define BLE_EVENT_CONNECTION 	1
+		#define BLE_EVENT_CONNECTION 1
 
 		// Queue to store data of receive messages
 
-		#define BLE_SIZE_QUEUE_RECV 3
+		#define BLE_SIZE_QUEUE_RECV 2
 
 	#endif
 #endif
