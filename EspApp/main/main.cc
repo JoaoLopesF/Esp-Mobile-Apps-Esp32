@@ -10,7 +10,7 @@
  * 0.3.0	23/08/18	Adjustments to allow sizes of BLE > 255
  * 						BLE has a queue now to receive data
  * 						Need when have more 1 message, to avoid empty string on event
- * 						Changed name of github repos to Esp-App-Mobile-Apps
+ * 						Changed name of github repos to Esp-App-Mobile-Apps-*
  **/
 
 /**
@@ -404,6 +404,12 @@ static void main_Task (void * pvParameters) {
  * @brief Initializes the app
  */
 void appInitialize(bool resetTimerSeconds) {
+
+	// Restore logging ?
+
+	if (mLogActiveSaved && !mLogActive) {
+		mLogActive = true; // Restore state
+	}
 
 	logD ("Initializing ..."); 
 
