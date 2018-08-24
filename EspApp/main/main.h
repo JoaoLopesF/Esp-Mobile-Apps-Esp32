@@ -30,7 +30,7 @@ using namespace std;
 
 // Firmware version
 
-#define FW_VERSION "0.1.0"
+#define FW_VERSION "0.3.0"
 
 // FreeRTOS // TODO: see it!
 
