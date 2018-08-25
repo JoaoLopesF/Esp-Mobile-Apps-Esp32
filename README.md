@@ -5,18 +5,18 @@ I have prepared a set of applications, to serve as a basis,
 for those who need to make ble connected mobile projects with the ESP32.
 
 * Part I    - __ESP-IDF app__ - Esp32 firmware example  - this github repo
-* Part II   - __iOS app__ - mobile app example          - https://github.com/JoaoLopesF/Esp-Mobile-Apps-iOS
-* Part III  - __Android app__ - mobile app example      - soon, prevision -> 30-Aug-2018
+* Part II   - __Android app__ - mobile app example      - https://github.com/JoaoLopesF/Esp-Mobile-Apps-Android
+* Part III  - __iOS app__     - mobile app example      - https://github.com/JoaoLopesF/Esp-Mobile-Apps-iOS
 
 It is a advanced, but simple (ready to go), fully functional set of applications
 
-![Esp-Mobile-App](https://i.imgur.com/MuR7gna.png)
+![Esp-Mobile-App](https://imgur.com/FXOFAUC)
 
 ## Contents
 
  - [Esp32](#esp32)
  - [BLE](#ble)
- - [Part I - ESP-IDF app](#part-i---esp-idf-app)
+ - [Part II - Android app](#part-io---android-app)
  - [Features](#features)
  - [BLE messages](#ble-messages)
  - [Structure](#structure)
@@ -44,7 +44,7 @@ devices with Bluetooth connection for mobile applications.
 BLE is a Bluetooth Low Energy:
 
     BLE is suitable for connection to Android and iOS.
-    Nearly 100% of devices run Android >= 4.0.3, and most of them should have BLE.
+    Nearly 100% of devices run Android >= 4.3, and most of them should have BLE.
     For iOS, we have support for BLE, and for normal Bluetooth, only some modules with Mfi certification (made for i ...)
 
     So BLE is the most viable alternative for Esp32 to communicate with mobile devices.
@@ -131,6 +131,7 @@ I suggest you use a FreeRTOS task to agregate data after send.
 
 Modules of esp-idf example aplication
 
+```
     - EspApp                   - The ESP-IDF application
         
         - main                    - main directory of esp-idf
@@ -150,6 +151,7 @@ Modules of esp-idf example aplication
             - peripherals.*         - code to treat ESP32 peripherals (GPIOs, ADC, etc.)
 
     - Extras                 - extra things, as VSCode configurations
+```
 
 Generally you do not need to change anything in the util directory. 
 If you need, please add a Issue or a commit, to put it in repo, to help a upgrades in util
