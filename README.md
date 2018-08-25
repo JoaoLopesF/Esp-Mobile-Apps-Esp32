@@ -10,7 +10,7 @@ for those who need to make ble connected mobile projects with the ESP32.
 
 It is a advanced, but simple (ready to go), fully functional set of applications
 
-![Esp-Mobile-App](https://imgur.com/FXOFAUC)
+![Esp-Mobile-App](https://i.imgur.com/FXOFAUC.png)
 
 ## Contents
 
