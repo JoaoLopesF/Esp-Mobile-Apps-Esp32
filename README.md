@@ -5,6 +5,7 @@ I have prepared a set of applications, to serve as a basis,
 for those who need to make ble connected mobile projects with the ESP32.
 
 * Part I    - Firmware on ESP32, can be:
+
               __ESP-IDF app__ - app example w/ ESP-IDF  - this github repo
               __Arduino app__ - app example w/ Arduino  - soon, prevision next sep 03
 
